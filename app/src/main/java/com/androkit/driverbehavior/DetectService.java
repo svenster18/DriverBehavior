@@ -185,7 +185,7 @@ public class DetectService extends Service implements SensorEventListener {
                     }
                 }
                 for (int i = 0; i < floatOutputs.length; i++) {
-                    if(floatOutputs[i] == max) {
+                    if(floatOutputs[i] == 1) {
                         maxIndex = i;
                         sameValue++;
                     }

@@ -42,6 +42,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
 
     private FirebaseDatabase db;
     DatabaseReference detectionRef;
+    String id;
 
     ArrayList<Float> ax = new ArrayList<>();
     ArrayList<Float> ay = new ArrayList<>();
@@ -115,7 +116,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
                     Manifest.permission.POST_NOTIFICATIONS);
         }
 
-        String id = getIntent().getStringExtra(EXTRA_ID);
+        id = getIntent().getStringExtra(EXTRA_ID);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("car").child("detection").child(id);
@@ -128,11 +129,13 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         tvBraking = findViewById(R.id.tv_sudden_breaking_2);
         tvAcceleration = findViewById(R.id.tv_sudden_acceleration_2);
 
+        Button btnMyPoints = findViewById(R.id.btn_my_points);
         Button btnStart = findViewById(R.id.btn_start);
         Button btnStop = findViewById(R.id.btn_stop);
 
         foregroundServiceIntent = new Intent(this, DetectService.class);
 
+        btnMyPoints.setOnClickListener(this);
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
     }
@@ -158,7 +161,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             bindService(foregroundServiceIntent, connection, BIND_AUTO_CREATE);
             started = true;
         }
-        if (view.getId() == R.id.btn_stop) {
+        else if (view.getId() == R.id.btn_stop) {
             stopService(foregroundServiceIntent);
             if (boundStatus) {
                 unbindService(connection);
@@ -171,9 +174,14 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
             String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(Calendar.getInstance().getTime());
             detectionRef.child(timeStamp).setValue(detection);
-//            if (!notif)
-//                showDialogFragment(STOP);
+            if (!notif)
+                showDialogFragment(STOP);
             started = false;
+        }
+        else if (view.getId() == R.id.btn_my_points) {
+            Intent intent = new Intent(DetectActivity.this, PointActivity.class);
+            intent.putExtra(EXTRA_ID, id);
+            startActivity(intent);
         }
     }
 
