@@ -32,7 +32,7 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
         edNoTelp = findViewById(R.id.edt_no_telepon);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
-        driverRef = db.getReference().child("car").child("driver");
+        driverRef = db.getReference().child("bike").child("driver");
 
         btnSimpan.setOnClickListener(this);
     }

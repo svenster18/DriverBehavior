@@ -41,7 +41,7 @@ public class PointActivity extends AppCompatActivity implements View.OnClickList
         String id = getIntent().getStringExtra(DetectActivity.EXTRA_ID);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
-        detectionRef = db.getReference().child("car").child("detection").child(id);
+        detectionRef = db.getReference().child("bike").child("detection").child(id);
         detectionRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {

@@ -119,7 +119,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         id = getIntent().getStringExtra(EXTRA_ID);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
-        detectionRef = db.getReference().child("car").child("detection").child(id);
+        detectionRef = db.getReference().child("bike").child("detection").child(id);
 
         notif = getIntent().getBooleanExtra(EXTRA_NOTIF, false);
         if (notif) showDialogFragment(NOTIF);

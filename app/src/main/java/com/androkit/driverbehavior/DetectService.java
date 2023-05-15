@@ -36,7 +36,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
-    private static final int TIME_STAMP = 10;
+    private static final int TIME_STAMP = 34;
     private final int NOTIFICATION_ID = 1;
     private final String CHANNEL_ID = "channel_01";
     private final String CHANNEL_NAME = "dicoding channel";
@@ -131,14 +131,14 @@ public class DetectService extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent sensorEvent) {
         Sensor sensorType = sensorEvent.sensor;
 
-        if(sensorType.getType()==Sensor.TYPE_ACCELEROMETER) {
+        if (sensorType.getType() == Sensor.TYPE_ACCELEROMETER) {
 
             // adding the accelerometer values inside the list
             ax.add(sensorEvent.values[0]);
             ay.add(sensorEvent.values[1]);
             az.add(sensorEvent.values[2]);
 
-        }else if(sensorType.getType()==Sensor.TYPE_GYROSCOPE){
+        } else if (sensorType.getType() == Sensor.TYPE_GYROSCOPE) {
 
             // adding the gyroscope values inside the list
             gx.add(sensorEvent.values[0]);
@@ -151,9 +151,8 @@ public class DetectService extends Service implements SensorEventListener {
 
     private void predict() {
         List<Float> data = new ArrayList<>();
-        if( ax.size() >= TIME_STAMP && ay.size() >= TIME_STAMP && az.size() >= TIME_STAMP
-                && gx.size() >= TIME_STAMP && gy.size() >= TIME_STAMP && gz.size() >= TIME_STAMP)
-        {
+        if (ax.size() >= TIME_STAMP && ay.size() >= TIME_STAMP && az.size() >= TIME_STAMP
+                && gx.size() >= TIME_STAMP && gy.size() >= TIME_STAMP && gz.size() >= TIME_STAMP) {
             data.addAll(ax.subList(0, TIME_STAMP));
             data.addAll(ay.subList(0, TIME_STAMP));
             data.addAll(az.subList(0, TIME_STAMP));
@@ -162,18 +161,18 @@ public class DetectService extends Service implements SensorEventListener {
             data.addAll(gy.subList(0, TIME_STAMP));
             data.addAll(gz.subList(0, TIME_STAMP));
 
-            Log.d(TAG, "predictActivities: Data in List ArrayList"+ data);
+            Log.d(TAG, "predictActivities: Data in List ArrayList" + data);
 
             try {
-                MobilAbnormalDriving model = MobilAbnormalDriving.newInstance(this);
+                AbnormalDriving model = AbnormalDriving.newInstance(this);
 
                 // Creates inputs for reference.
-                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 10}, DataType.FLOAT32);
+                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, TIME_STAMP}, DataType.FLOAT32);
                 Log.d("shape", inputFeature0.getBuffer().toString());
                 inputFeature0.loadArray(toFloatArray(data));
 
                 // Runs model inference and gets result.
-                MobilAbnormalDriving.Outputs outputs = model.process(inputFeature0);
+                AbnormalDriving.Outputs outputs = model.process(inputFeature0);
                 TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
                 float[] floatOutputs = outputFeature0.getFloatArray();
                 float max = Float.MIN_VALUE;
@@ -185,91 +184,81 @@ public class DetectService extends Service implements SensorEventListener {
                     }
                 }
                 for (int i = 0; i < floatOutputs.length; i++) {
-                    if(floatOutputs[i] == max) {
+                    if (floatOutputs[i] == max) {
                         maxIndex = i;
                         sameValue++;
                     }
                 }
-//                if (started) {
-                    if (sameValue == 1) {
-                        switch (maxIndex) {
-//                            case 0 : {
-//                                Log.d(TAG, "Normal");
-//                                break;
-//                            }
-                            case 0 : {
-                                Log.d(TAG, "Zigzag");
-                                zigzag++;
-                                zigzagLiveData.postValue(zigzag);
-                                if (zigzag == 7 ) {
-                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
-                                }
-                                break;
+                if (sameValue == 1) {
+                    switch (maxIndex) {
+                        case 0: {
+                            Log.d(TAG, "Normal");
+                            break;
+                        }
+                        case 1: {
+                            Log.d(TAG, "Zigzag");
+                            zigzag++;
+                            zigzagLiveData.postValue(zigzag);
+                            if (zigzag == 7) {
+                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                             }
-                            case 1 : {
-                                Log.d(TAG, "Sleepy");
-                                sleepy++;
-                                sleepyLiveData.postValue(sleepy);
-                                if (sleepy == 7 ) {
-                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
-                                }
-                                break;
+                            break;
+                        }
+                        case 2: {
+                            Log.d(TAG, "Sleepy");
+                            sleepy++;
+                            sleepyLiveData.postValue(sleepy);
+                            if (sleepy == 7) {
+                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                             }
-                            case 2 : {
-                                Log.d(TAG, "Sudden Braking");
-                                braking++;
-                                brakingLiveData.postValue(braking);
-                                if (braking == 7 ) {
-                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
-                                }
-                                break;
+                            break;
+                        }
+                        case 3: {
+                            Log.d(TAG, "Sudden Braking");
+                            braking++;
+                            brakingLiveData.postValue(braking);
+                            if (braking == 7) {
+                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                             }
-                            case 3 : {
-                                Log.d(TAG, "Sudden Acceleration");
-                                acceleration++;
-                                accelerationLiveData.postValue(acceleration);
-                                if (acceleration == 7 ) {
-                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
-                                }
+                            break;
+                        }
+                        case 4: {
+                            Log.d(TAG, "Sudden Acceleration");
+                            acceleration++;
+                            accelerationLiveData.postValue(acceleration);
+                            if (acceleration == 7) {
+                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                            }
 
-                                break;
-                            }
+                            break;
                         }
                     }
-                    else {
-                        Log.d(TAG, "Normal");
-                    }
-//                }
-//                else {
-//                    zigzag = 0;
-//                    sleepy = 0;
-//                    braking = 0;
-//                    acceleration = 0;
-//
-////                    tvZigZag.setText(String.valueOf(sleepy));
-////                    tvSleepy.setText(String.valueOf(sleepy));
-////                    tvBraking.setText(String.valueOf(braking));
-////                    tvAcceleration.setText(String.valueOf(acceleration));
-//                }
+                } else {
+                    Log.d(TAG, "Normal");
+                }
                 Log.d(TAG, "predictActivities: output array: " + Arrays.toString(outputFeature0.getFloatArray()));
 
                 // Releases model resources if no longer used.
                 model.close();
 
                 //clear the list for the next prediction
-                ax.clear(); ay.clear(); az.clear();
-                gx.clear(); gy.clear(); gz.clear();
+                ax.clear();
+                ay.clear();
+                az.clear();
+                gx.clear();
+                gy.clear();
+                gz.clear();
             } catch (IOException e) {
                 // TODO Handle the exception
             }
         }
     }
 
-    private float[] toFloatArray(List<Float> data){
+    private float[] toFloatArray(List<Float> data) {
         int i = 0;
         float[] array = new float[data.size()];
-        for (Float f: data){
-            array[i++] = (f !=null ? f: Float.NaN);
+        for (Float f : data) {
+            array[i++] = (f != null ? f : Float.NaN);
         }
         return array;
     }
