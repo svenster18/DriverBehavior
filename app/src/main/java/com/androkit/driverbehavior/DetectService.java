@@ -36,7 +36,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
-    private static final int TIME_STAMP = 34;
+    private static final int TIME_STAMP = 10;
     private final int NOTIFICATION_ID = 1;
     private final String CHANNEL_ID = "channel_01";
     private final String CHANNEL_NAME = "dicoding channel";
@@ -104,8 +104,6 @@ public class DetectService extends Service implements SensorEventListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = buildNotification();
 
-        setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
-
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -170,7 +168,7 @@ public class DetectService extends Service implements SensorEventListener {
                 MobilAbnormalDriving model = MobilAbnormalDriving.newInstance(this);
 
                 // Creates inputs for reference.
-                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 34}, DataType.FLOAT32);
+                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 10}, DataType.FLOAT32);
                 Log.d("shape", inputFeature0.getBuffer().toString());
                 inputFeature0.loadArray(toFloatArray(data));
 
@@ -195,45 +193,41 @@ public class DetectService extends Service implements SensorEventListener {
 //                if (started) {
                     if (sameValue == 1) {
                         switch (maxIndex) {
+//                            case 0 : {
+//                                Log.d(TAG, "Normal");
+//                                break;
+//                            }
                             case 0 : {
-                                Log.d(TAG, "Normal");
-                                break;
-                            }
-                            case 1 : {
                                 Log.d(TAG, "Zigzag");
                                 zigzag++;
                                 zigzagLiveData.postValue(zigzag);
-//                                tvZigZag.setText(String.valueOf(zigzag));
                                 if (zigzag == 7 ) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
                             }
-                            case 2 : {
+                            case 1 : {
                                 Log.d(TAG, "Sleepy");
                                 sleepy++;
-//                                tvSleepy.setText(String.valueOf(sleepy));
                                 sleepyLiveData.postValue(sleepy);
                                 if (sleepy == 7 ) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
                             }
-                            case 3 : {
+                            case 2 : {
                                 Log.d(TAG, "Sudden Braking");
                                 braking++;
                                 brakingLiveData.postValue(braking);
-//                                tvBraking.setText(String.valueOf(braking));
                                 if (braking == 7 ) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
                             }
-                            case 4 : {
+                            case 3 : {
                                 Log.d(TAG, "Sudden Acceleration");
                                 acceleration++;
                                 accelerationLiveData.postValue(acceleration);
-//                                tvAcceleration.setText(String.valueOf(acceleration));
                                 if (acceleration == 7 ) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
