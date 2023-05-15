@@ -1,57 +1,35 @@
 package com.androkit.driverbehavior;
 
 import android.Manifest;
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 
-import com.androkit.driverbehavior.ml.AbnormalDriving;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import org.checkerframework.checker.units.qual.A;
-import org.tensorflow.lite.DataType;
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class DetectActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_NOTIF = "extra_notif";
+    public static final String EXTRA_ID = "extra_id";
     public static final int NOTIF = 1;
     public static final int STOP = 2;
 
@@ -62,7 +40,9 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     private TextView tvBraking;
     private TextView tvAcceleration;
 
-    private boolean started = false;
+    private FirebaseDatabase db;
+    DatabaseReference detectionRef;
+    String id;
 
     ArrayList<Float> ax = new ArrayList<>();
     ArrayList<Float> ay = new ArrayList<>();
@@ -122,15 +102,6 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (boundStatus) {
-            unbindService(connection);
-            boundStatus = false;
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detect);
@@ -145,6 +116,11 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
                     Manifest.permission.POST_NOTIFICATIONS);
         }
 
+        id = getIntent().getStringExtra(EXTRA_ID);
+
+        db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
+        detectionRef = db.getReference().child("car").child("detection").child(id);
+
         notif = getIntent().getBooleanExtra(EXTRA_NOTIF, false);
         if (notif) showDialogFragment(NOTIF);
 
@@ -153,11 +129,13 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         tvBraking = findViewById(R.id.tv_sudden_breaking_2);
         tvAcceleration = findViewById(R.id.tv_sudden_acceleration_2);
 
+        Button btnMyPoints = findViewById(R.id.btn_my_points);
         Button btnStart = findViewById(R.id.btn_start);
         Button btnStop = findViewById(R.id.btn_stop);
 
         foregroundServiceIntent = new Intent(this, DetectService.class);
 
+        btnMyPoints.setOnClickListener(this);
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
     }
@@ -173,6 +151,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
 
+        boolean started = false;
         if (view.getId() == R.id.btn_start) {
             if (Build.VERSION.SDK_INT >= 26) {
                 startForegroundService(foregroundServiceIntent);
@@ -182,11 +161,36 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             bindService(foregroundServiceIntent, connection, BIND_AUTO_CREATE);
             started = true;
         }
-        if (view.getId() == R.id.btn_stop) {
+        else if (view.getId() == R.id.btn_stop) {
             stopService(foregroundServiceIntent);
+            if (boundStatus) {
+                unbindService(connection);
+                boundStatus = false;
+            }
+            int zigZag = Integer.parseInt(tvZigZag.getText().toString());
+            int sleepy = Integer.parseInt(tvSleepy.getText().toString());
+            int suddenBraking = Integer.parseInt(tvBraking.getText().toString());
+            int suddenAcceleration = Integer.parseInt(tvAcceleration.getText().toString());
+            Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
+            String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(Calendar.getInstance().getTime());
+            detectionRef.child(timeStamp).setValue(detection);
             if (!notif)
                 showDialogFragment(STOP);
             started = false;
+        }
+        else if (view.getId() == R.id.btn_my_points) {
+            Intent intent = new Intent(DetectActivity.this, PointActivity.class);
+            intent.putExtra(EXTRA_ID, id);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (boundStatus) {
+            unbindService(connection);
+            boundStatus = false;
         }
     }
 }
