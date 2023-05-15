@@ -16,6 +16,7 @@
         android:text="Data Pengemudi"
         android:textColor="#224271"
         android:textSize="30sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -41,16 +42,25 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView6"
         app:srcCompat="@drawable/r_removebg_preview_1" />
 
-    <TextView
-        android:id="@+id/tv_nama_pengemudi"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/edt_nama_pengguna"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="80dp"
+        android:backgroundTint="#FBEDC9"
+        android:ems="10"
         android:fontFamily="@font/istok_web_bold"
-        android:text="Nama Pengemudi"
+        android:hint="Nama Pengguna"
+        android:inputType="text"
         android:textColor="#224271"
-        android:textSize="18sp"
+        android:textColorHint="#224271"
+        android:textSize="22sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imageView8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.024"
         app:layout_constraintStart_toEndOf="@+id/imageView8"
         app:layout_constraintTop_toTopOf="@+id/imageView8" />
 
@@ -75,30 +85,16 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView6"
         app:srcCompat="@drawable/img_352451_removebg_preview_1" />
 
-    <TextView
-        android:id="@+id/tv_no_telepon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:fontFamily="@font/istok_web_bold"
-        android:text="No Telepon"
-        android:textColor="#224271"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView10"
-        app:layout_constraintStart_toEndOf="@+id/imageView10"
-        app:layout_constraintTop_toTopOf="@+id/imageView10" />
-
     <ImageView
         android:id="@+id/imageView11"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="80dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="80dp"
         app:layout_constraintEnd_toEndOf="@+id/imageView9"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/imageView9"
-        app:layout_constraintTop_toBottomOf="@+id/tv_no_telepon"
+        app:layout_constraintTop_toBottomOf="@+id/imageView10"
         app:srcCompat="@drawable/line_4" />
 
     <Button
@@ -108,11 +104,36 @@
         android:layout_marginStart="90dp"
         android:layout_marginTop="50dp"
         android:layout_marginEnd="90dp"
+        android:layout_marginBottom="20dp"
         android:backgroundTint="#6B5C9E07"
+        android:fontFamily="@font/istok_web_bold"
         android:text="Simpan"
         android:textColor="#224271"
-        android:textSize="18sp"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView11" />
+
+    <EditText
+        android:id="@+id/edt_no_telepon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="80dp"
+        android:backgroundTint="#FBEDC9"
+        android:ems="10"
+        android:fontFamily="@font/istok_web_bold"
+        android:hint="No Telepon"
+        android:inputType="text"
+        android:textColor="#224271"
+        android:textColorHint="#224271"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/imageView10"
+        app:layout_constraintTop_toTopOf="@+id/imageView10" />
 </androidx.constraintlayout.widget.ConstraintLayout>
