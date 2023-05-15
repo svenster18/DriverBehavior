@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "205640371082",
+    "project_id": "driver-behavior-5f3db",
+    "storage_bucket": "driver-behavior-5f3db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205640371082:android:2447dbcb8633deab089673",
+        "android_client_info": {
+          "package_name": "com.androkit.driverbehavior"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "205640371082-std5nitjekvac9on4i0t0hnc03pbjmjs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW7VlNR1tqFPrY0qlCQqNPjSsPy3YabOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205640371082-std5nitjekvac9on4i0t0hnc03pbjmjs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
