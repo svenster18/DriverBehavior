@@ -2,6 +2,8 @@ package com.androkit.driverbehavior;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PointActivity extends AppCompatActivity {
+public class PointActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseDatabase db;
     DatabaseReference detectionRef;
@@ -34,6 +36,7 @@ public class PointActivity extends AppCompatActivity {
 
         TextView tvPoints = findViewById(R.id.tv_points);
         RecyclerView rvPoints = findViewById(R.id.rv_points);
+        Button btnBack = findViewById(R.id.btn_back);
 
         String id = getIntent().getStringExtra(DetectActivity.EXTRA_ID);
 
@@ -68,6 +71,8 @@ public class PointActivity extends AppCompatActivity {
         adapter = new PointAdapter(options);
 
         rvPoints.setAdapter(adapter);
+
+        btnBack.setOnClickListener(this);
     }
 
     @Override
@@ -80,5 +85,10 @@ public class PointActivity extends AppCompatActivity {
     protected void onPause() {
         adapter.stopListening();
         super.onPause();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.btn_back) finish();
     }
 }

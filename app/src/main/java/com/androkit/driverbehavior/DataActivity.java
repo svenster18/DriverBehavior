@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +19,8 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
 
     private FirebaseDatabase db;
     DatabaseReference driverRef;
+    EditText edNama;
+    EditText edNoTelp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +28,8 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_data);
 
         Button btnSimpan = findViewById(R.id.btn_simpan);
+        edNama = findViewById(R.id.edt_nama_pengguna);
+        edNoTelp = findViewById(R.id.edt_no_telepon);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         driverRef = db.getReference().child("car").child("driver");
@@ -35,7 +40,19 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_simpan) {
-            Driver driver = new Driver("Corel Athia", "081234567890");
+            String name = edNama.getText().toString();
+            String phone = edNoTelp.getText().toString();
+
+            if (name.isEmpty()) {
+                edNama.setError("Name cannot be empty");
+                return;
+            }
+            if (phone.isEmpty()) {
+                edNoTelp.setError("Phone cannot be empty");
+                return;
+            }
+
+            Driver driver = new Driver(name, phone);
             String id = driver.name.toLowerCase().replace(" ", "-");
             driverRef.child(id).setValue(driver)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
