@@ -82,21 +82,25 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     private void getValueFromService() {
         final Observer<Integer> zigzagObserver = zigzag -> {
             tvZigZag.setText(String.valueOf(zigzag));
+            if (zigzag == 7) showDialogFragment(NOTIF);
         };
         detectService.zigzagLiveData.observe(this, zigzagObserver);
 
         final Observer<Integer> sleepyObserver = sleepy -> {
             tvSleepy.setText(String.valueOf(sleepy));
+            if (sleepy == 7) showDialogFragment(NOTIF);
         };
         detectService.sleepyLiveData.observe(this, sleepyObserver);
 
         final Observer<Integer> brakingObserver = braking -> {
             tvBraking.setText(String.valueOf(braking));
+            if (braking == 7) showDialogFragment(NOTIF);
         };
         detectService.brakingLiveData.observe(this, brakingObserver);
 
         final Observer<Integer> accleerationObserver = acceleration -> {
             tvAcceleration.setText(String.valueOf(acceleration));
+            if (acceleration == 7) showDialogFragment(NOTIF);
         };
         detectService.accelerationLiveData.observe(this, accleerationObserver);
     }
