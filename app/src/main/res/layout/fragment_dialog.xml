@@ -35,7 +35,7 @@
         android:id="@+id/view2"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
-        android:background=" #B8CC78"
+        android:background="#E09E2B07"
         android:padding="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

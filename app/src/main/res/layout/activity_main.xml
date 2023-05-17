@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FBEDC9"
+    android:background="#F2EFEC"
     tools:context=".MainActivity">
 
     <ImageView
@@ -17,20 +17,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ellipse_1" />
+        app:srcCompat="@drawable/ellipse_2" />
 
     <ImageView
         android:id="@+id/imageView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="120dp"
-        android:layout_marginTop="100dp"
         android:layout_marginEnd="120dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/png_transparent_car_steering_wheel_hand_steering_wheel_driving_bicycle_logo_thumbnail_removebg_preview_1" />
+        app:layout_constraintTop_toTopOf="@+id/imageView"
+        app:srcCompat="@drawable/r_1" />
 
     <TextView
         android:id="@+id/tv_driver_behavior"
@@ -70,7 +70,7 @@
         app:layout_constraintEnd_toEndOf="@+id/tv_driver_behavior"
         app:layout_constraintStart_toStartOf="@+id/tv_driver_behavior"
         app:layout_constraintTop_toBottomOf="@+id/tv_driver_behavior"
-        app:srcCompat="@drawable/line_1" />
+        app:srcCompat="@drawable/line_1_2" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -82,7 +82,7 @@
         app:layout_constraintEnd_toEndOf="@+id/tv_driver_behavior"
         app:layout_constraintStart_toStartOf="@+id/tv_driver_behavior"
         app:layout_constraintTop_toBottomOf="@+id/tv_sensor_avaibility"
-        app:srcCompat="@drawable/line_1" />
+        app:srcCompat="@drawable/line_2_1" />
 
     <ImageView
         android:id="@+id/imageView5"
@@ -156,7 +156,7 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:backgroundTint="#6B5C9E07"
+        android:backgroundTint="#6B9E2B07"
         android:fontFamily="@font/istok_web_bold"
         android:text="Next"
         android:textAllCaps="false"

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FBEDC9"
+    android:background="#F2EFEC"
     android:padding="25dp"
     tools:context=".PointActivity">
 
@@ -24,7 +24,7 @@
                 android:id="@+id/cardView2"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                app:cardBackgroundColor="#B8CC78"
+                app:cardBackgroundColor="#6B9E2B07"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
