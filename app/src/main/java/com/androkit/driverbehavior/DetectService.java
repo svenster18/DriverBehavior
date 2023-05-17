@@ -190,14 +190,13 @@ public class DetectService extends Service implements SensorEventListener {
                         sameValue++;
                     }
                 }
-//                if (started) {
                     if (sameValue == 1) {
                         switch (maxIndex) {
-//                            case 0 : {
-//                                Log.d(TAG, "Normal");
-//                                break;
-//                            }
                             case 0 : {
+                                Log.d(TAG, "Normal");
+                                break;
+                            }
+                            case 1 : {
                                 Log.d(TAG, "Zigzag");
                                 zigzag++;
                                 zigzagLiveData.postValue(zigzag);
@@ -206,7 +205,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 }
                                 break;
                             }
-                            case 1 : {
+                            case 2 : {
                                 Log.d(TAG, "Sleepy");
                                 sleepy++;
                                 sleepyLiveData.postValue(sleepy);
@@ -215,7 +214,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 }
                                 break;
                             }
-                            case 2 : {
+                            case 3 : {
                                 Log.d(TAG, "Sudden Braking");
                                 braking++;
                                 brakingLiveData.postValue(braking);
@@ -224,7 +223,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 }
                                 break;
                             }
-                            case 3 : {
+                            case 4 : {
                                 Log.d(TAG, "Sudden Acceleration");
                                 acceleration++;
                                 accelerationLiveData.postValue(acceleration);
@@ -239,17 +238,6 @@ public class DetectService extends Service implements SensorEventListener {
                     else {
                         Log.d(TAG, "Normal");
                     }
-//                }
-//                else {
-//                    zigzag = 0;
-//                    sleepy = 0;
-//                    braking = 0;
-//                    acceleration = 0;
-//
-////                    tvZigZag.setText(String.valueOf(sleepy));
-////                    tvSleepy.setText(String.valueOf(sleepy));
-////                    tvBraking.setText(String.valueOf(braking));
-////                    tvAcceleration.setText(String.valueOf(acceleration));
 //                }
                 Log.d(TAG, "predictActivities: output array: " + Arrays.toString(outputFeature0.getFloatArray()));
 

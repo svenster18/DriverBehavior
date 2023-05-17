@@ -82,23 +82,27 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     private void getValueFromService() {
         final Observer<Integer> zigzagObserver = zigzag -> {
             tvZigZag.setText(String.valueOf(zigzag));
+            if (zigzag == 7) showDialogFragment(NOTIF);
         };
         detectService.zigzagLiveData.observe(this, zigzagObserver);
 
         final Observer<Integer> sleepyObserver = sleepy -> {
             tvSleepy.setText(String.valueOf(sleepy));
+            if (sleepy == 7) showDialogFragment(NOTIF);
         };
         detectService.sleepyLiveData.observe(this, sleepyObserver);
 
         final Observer<Integer> brakingObserver = braking -> {
             tvBraking.setText(String.valueOf(braking));
+            if (braking == 7) showDialogFragment(NOTIF);
         };
         detectService.brakingLiveData.observe(this, brakingObserver);
 
-        final Observer<Integer> accleerationObserver = acceleration -> {
+        final Observer<Integer> accelerationObserver = acceleration -> {
             tvAcceleration.setText(String.valueOf(acceleration));
+            if (acceleration == 7) showDialogFragment(NOTIF);
         };
-        detectService.accelerationLiveData.observe(this, accleerationObserver);
+        detectService.accelerationLiveData.observe(this, accelerationObserver);
     }
 
     @Override
@@ -174,8 +178,11 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
             String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(Calendar.getInstance().getTime());
             detectionRef.child(timeStamp).setValue(detection);
-            if (!notif)
+            if (!notif || (zigZag == 0 && sleepy == 0 && suddenBraking == 0 && suddenAcceleration == 0))
                 showDialogFragment(STOP);
+            else {
+                showDialogFragment(NOTIF);
+            }
             started = false;
         }
         else if (view.getId() == R.id.btn_my_points) {
