@@ -43,6 +43,15 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
             tvTitle.setTextColor(getActivity().getColor(R.color.white));
             tvMessage.setText("Yeayy!! congrats, you got 100 points. Keep driving carefully :)");
             tvMessage.setTextColor(getActivity().getColor(R.color.navy));
+            btnConfirm.setText("Back");
+            btnConfirm.getBackground().setTint(requireActivity().getColor(R.color.gray));
+            btnConfirm.setTextColor(requireActivity().getColor(R.color.white));
+        }
+        else {
+            tvTitle.setText("Warning!");
+            tvTitle.setTextColor(requireActivity().getColor(R.color.red));
+            tvMessage.setText("You have been driving outside normal limits");
+            tvMessage.setTextColor(getActivity().getColor(R.color.white));
         }
 
         btnConfirm.setOnClickListener(this);

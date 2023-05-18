@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 
 import com.androkit.driverbehavior.ml.AbnormalDriving;
+import com.androkit.driverbehavior.ml.Mobil2AbnormalDriving;
 import com.androkit.driverbehavior.ml.MobilAbnormalDriving;
 
 import org.tensorflow.lite.DataType;
@@ -165,6 +166,7 @@ public class DetectService extends Service implements SensorEventListener {
             Log.d(TAG, "predictActivities: Data in List ArrayList"+ data);
 
             try {
+
                 MobilAbnormalDriving model = MobilAbnormalDriving.newInstance(this);
 
                 // Creates inputs for reference.

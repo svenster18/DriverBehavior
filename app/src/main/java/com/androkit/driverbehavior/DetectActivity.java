@@ -166,11 +166,6 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             started = true;
         }
         else if (view.getId() == R.id.btn_stop) {
-            stopService(foregroundServiceIntent);
-            if (boundStatus) {
-                unbindService(connection);
-                boundStatus = false;
-            }
             int zigZag = Integer.parseInt(tvZigZag.getText().toString());
             int sleepy = Integer.parseInt(tvSleepy.getText().toString());
             int suddenBraking = Integer.parseInt(tvBraking.getText().toString());
@@ -178,10 +173,15 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
             String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(Calendar.getInstance().getTime());
             detectionRef.child(timeStamp).setValue(detection);
-            if (!notif || (zigZag == 0 && sleepy == 0 && suddenBraking == 0 && suddenAcceleration == 0))
+            stopService(foregroundServiceIntent);
+            if (!notif && (zigZag == 0 && sleepy == 0 && suddenBraking == 0 && suddenAcceleration == 0))
                 showDialogFragment(STOP);
             else {
                 showDialogFragment(NOTIF);
+            }
+            if (boundStatus) {
+                unbindService(connection);
+                boundStatus = false;
             }
             started = false;
         }
