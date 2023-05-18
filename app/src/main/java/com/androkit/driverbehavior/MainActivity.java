@@ -1,6 +1,7 @@
 package com.androkit.driverbehavior;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,11 +32,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         if (sensorAcc != null) {
-            ivCeklisAcc.setImageDrawable(getDrawable(R.drawable.checklist));
+            ivCeklisAcc.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.checklist));
         }
 
         if (sensorGyro != null) {
-            ivCeklisGyroscope.setImageDrawable(getDrawable(R.drawable.checklist));
+            ivCeklisGyroscope.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.checklist));
         }
 
         btnNext.setOnClickListener(this);

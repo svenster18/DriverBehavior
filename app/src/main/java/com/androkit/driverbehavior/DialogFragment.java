@@ -9,11 +9,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+
+import java.util.Objects;
 
 public class DialogFragment extends androidx.fragment.app.DialogFragment implements View.OnClickListener {
 
-    public static String EXTRA_FROM = "extra_from";
     private int from;
 
     public int getFrom() {
@@ -40,7 +40,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
 
         if (getFrom() == DetectActivity.STOP) {
             tvTitle.setText("Reward");
-            tvTitle.setTextColor(getActivity().getColor(R.color.white));
+            tvTitle.setTextColor(Objects.requireNonNull(getActivity()).getColor(R.color.white));
             tvMessage.setText("Yeayy!! congrats, you got 100 points. Keep driving carefully :)");
             tvMessage.setTextColor(getActivity().getColor(R.color.navy));
             btnConfirm.setText("Back");

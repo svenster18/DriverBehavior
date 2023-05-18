@@ -15,7 +15,6 @@ public class PointAdapter extends FirebaseRecyclerAdapter<Detection, PointAdapte
      * Initialize a {@link RecyclerView.Adapter} that listens to a Firebase query. See
      * {@link FirebaseRecyclerOptions} for configuration options.
      *
-     * @param options
      */
     public PointAdapter(@NonNull FirebaseRecyclerOptions<Detection> options) {
         super(options);
@@ -33,12 +32,7 @@ public class PointAdapter extends FirebaseRecyclerAdapter<Detection, PointAdapte
         return new PointViewHolder(view);
     }
 
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
-    }
-
-    public class PointViewHolder extends RecyclerView.ViewHolder {
+    public static class PointViewHolder extends RecyclerView.ViewHolder {
 
         public PointViewHolder(View view) {
             super(view);

@@ -4,14 +4,9 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
 public class Driver {
-    public String name;
-    public String phone;
+    public final String name;
 
-    public Driver() {
-    }
-
-    public Driver(String name, String phone) {
+    public Driver(String name) {
         this.name = name;
-        this.phone = phone;
     }
 }

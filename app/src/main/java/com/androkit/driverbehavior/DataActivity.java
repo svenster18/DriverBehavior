@@ -17,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class DataActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private FirebaseDatabase db;
     DatabaseReference driverRef;
     EditText edNama;
     EditText edNoTelp;
@@ -31,7 +30,7 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
         edNama = findViewById(R.id.edt_nama_pengguna);
         edNoTelp = findViewById(R.id.edt_no_telepon);
 
-        db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         driverRef = db.getReference().child("bike").child("driver");
 
         btnSimpan.setOnClickListener(this);
@@ -52,21 +51,11 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
 
-            Driver driver = new Driver(name, phone);
+            Driver driver = new Driver(name);
             String id = driver.name.toLowerCase().replace(" ", "-");
             driverRef.child(id).setValue(driver)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void unused) {
-                            Toast.makeText(getApplication(), "Driver Data saved", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getApplication(), "Driver Data failed to save", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    .addOnSuccessListener(unused -> Toast.makeText(getApplication(), "Driver Data saved", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(getApplication(), "Driver Data failed to save", Toast.LENGTH_SHORT).show());
 
             Intent intent = new Intent(DataActivity.this, DetectActivity.class);
             intent.putExtra(DetectActivity.EXTRA_ID, id);

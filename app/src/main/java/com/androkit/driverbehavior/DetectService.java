@@ -24,7 +24,6 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 
 import com.androkit.driverbehavior.ml.AbnormalDriving;
-import com.androkit.driverbehavior.ml.MobilAbnormalDriving;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
@@ -37,32 +36,27 @@ import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
     private static final int TIME_STAMP = 34;
-    private final int NOTIFICATION_ID = 1;
-    private final String CHANNEL_ID = "channel_01";
-    private final String CHANNEL_NAME = "dicoding channel";
     final String TAG = DetectService.class.getSimpleName();
     private SensorManager sensorManager;
-    private Sensor sensorAcc;
-    private Sensor sensorGyro;
 
-    ArrayList<Float> ax = new ArrayList<>();
-    ArrayList<Float> ay = new ArrayList<>();
-    ArrayList<Float> az = new ArrayList<>();
-    ArrayList<Float> gx = new ArrayList<>();
-    ArrayList<Float> gy = new ArrayList<>();
-    ArrayList<Float> gz = new ArrayList<>();
+    final ArrayList<Float> ax = new ArrayList<>();
+    final ArrayList<Float> ay = new ArrayList<>();
+    final ArrayList<Float> az = new ArrayList<>();
+    final ArrayList<Float> gx = new ArrayList<>();
+    final ArrayList<Float> gy = new ArrayList<>();
+    final ArrayList<Float> gz = new ArrayList<>();
 
     private int zigzag = 0;
     private int sleepy = 0;
     private int braking = 0;
     private int acceleration = 0;
 
-    MutableLiveData<Integer> zigzagLiveData = new MutableLiveData<>();
-    MutableLiveData<Integer> sleepyLiveData = new MutableLiveData<>();
-    MutableLiveData<Integer> brakingLiveData = new MutableLiveData<>();
-    MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
+    final MutableLiveData<Integer> zigzagLiveData = new MutableLiveData<>();
+    final MutableLiveData<Integer> sleepyLiveData = new MutableLiveData<>();
+    final MutableLiveData<Integer> brakingLiveData = new MutableLiveData<>();
+    final MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
 
-    private DetectBinder binder = new DetectBinder();
+    private final DetectBinder binder = new DetectBinder();
 
     public DetectService() {
     }
@@ -72,6 +66,7 @@ public class DetectService extends Service implements SensorEventListener {
         int pendingFlags = PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, pendingFlags);
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String CHANNEL_ID = "channel_01";
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -79,6 +74,7 @@ public class DetectService extends Service implements SensorEventListener {
                 .setContentText("Detecting Behavior Service Running")
                 .setAutoCancel(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String CHANNEL_NAME = "dicoding channel";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_DEFAULT);
@@ -105,11 +101,12 @@ public class DetectService extends Service implements SensorEventListener {
         Notification notification = buildNotification();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        Sensor sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Sensor sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         sensorManager.registerListener(this, sensorAcc, 50000);
         sensorManager.registerListener(this, sensorGyro, 50000);
 
+        int NOTIFICATION_ID = 1;
         startForeground(NOTIFICATION_ID, notification);
         Log.d(TAG, "Service dijalankan...");
 
@@ -200,7 +197,7 @@ public class DetectService extends Service implements SensorEventListener {
                             zigzag++;
                             zigzagLiveData.postValue(zigzag);
                             if (zigzag == 7) {
-                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                setAlarm(this);
                             }
                             break;
                         }
@@ -209,7 +206,7 @@ public class DetectService extends Service implements SensorEventListener {
                             sleepy++;
                             sleepyLiveData.postValue(sleepy);
                             if (sleepy == 7) {
-                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                setAlarm(this);
                             }
                             break;
                         }
@@ -218,7 +215,7 @@ public class DetectService extends Service implements SensorEventListener {
                             braking++;
                             brakingLiveData.postValue(braking);
                             if (braking == 7) {
-                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                setAlarm(this);
                             }
                             break;
                         }
@@ -227,7 +224,7 @@ public class DetectService extends Service implements SensorEventListener {
                             acceleration++;
                             accelerationLiveData.postValue(acceleration);
                             if (acceleration == 7) {
-                                setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                setAlarm(this);
                             }
 
                             break;
@@ -263,16 +260,16 @@ public class DetectService extends Service implements SensorEventListener {
         return array;
     }
 
-    private void setAlarm(Context context, String title, String message, int notifId) {
+    private void setAlarm(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Calendar calendar = Calendar.getInstance();
         if (alarmManager != null) {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), null);
         }
-        showAlarmNotification(context, title, message, notifId);
+        showAlarmNotification(context);
     }
 
-    private void showAlarmNotification(Context context, String title, String message, int notifId) {
+    private void showAlarmNotification(Context context) {
         String CHANNEL_ID = "Channel_1";
         String CHANNEL_NAME = "AlarmManager channel";
 
@@ -288,8 +285,8 @@ public class DetectService extends Service implements SensorEventListener {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(message)
+                .setContentTitle("Warning")
+                .setContentText("You have been driving outside normal limits")
                 .setColor(ContextCompat.getColor(context, android.R.color.transparent))
                 .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
                 .setSound(alarmSound);
@@ -307,7 +304,7 @@ public class DetectService extends Service implements SensorEventListener {
         }
         Notification notification = builder.build();
         if (notificationManagerCompat != null) {
-            notificationManagerCompat.notify(notifId, notification);
+            notificationManagerCompat.notify(100, notification);
             Log.d(TAG, "Alarm started");
         }
     }
@@ -318,6 +315,6 @@ public class DetectService extends Service implements SensorEventListener {
     }
 
     public class DetectBinder extends Binder {
-        DetectService getService = DetectService.this;
+        final DetectService getService = DetectService.this;
     }
 }
