@@ -42,7 +42,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
 
     private FirebaseDatabase db;
     DatabaseReference detectionRef;
-    String id;
+    String id = "";
 
     ArrayList<Float> ax = new ArrayList<>();
     ArrayList<Float> ay = new ArrayList<>();
@@ -120,7 +120,8 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
                     Manifest.permission.POST_NOTIFICATIONS);
         }
 
-        id = getIntent().getStringExtra(EXTRA_ID);
+        if (getIntent().getStringExtra(EXTRA_ID) != null)
+            id = getIntent().getStringExtra(EXTRA_ID);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("bike").child("detection").child(id);
