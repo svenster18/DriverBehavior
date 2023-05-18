@@ -10,9 +10,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/png_transparent_car_steering_wheel_hand_steering_wheel_driving_bicycle_logo_thumbnail_removebg_preview_1"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/png_transparent_car_steering_wheel_hand_steering_wheel_driving_bicycle_logo_thumbnail_removebg_preview_1"
         android:supportsRtl="true"
         android:theme="@style/Theme.DriverBehavior"
         tools:targetApi="31">
