@@ -164,7 +164,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
             String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss", Locale.US).format(Calendar.getInstance().getTime());
             detectionRef.child(timeStamp).setValue(detection);
-            if (!notif && zigZag == 0 && sleepy == 0 && suddenBraking == 0 && suddenAcceleration == 0)
+            if (!notif && zigZag < 7 && sleepy < 7 && suddenBraking < 7  && suddenAcceleration < 7)
                 showDialogFragment(STOP);
             else
                 showDialogFragment(NOTIF);
