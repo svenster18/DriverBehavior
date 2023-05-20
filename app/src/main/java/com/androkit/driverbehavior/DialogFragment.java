@@ -40,7 +40,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
 
         if (getFrom() == DetectActivity.STOP) {
             tvTitle.setText("Reward");
-            tvTitle.setTextColor(Objects.requireNonNull(getActivity()).getColor(R.color.white));
+            tvTitle.setTextColor(requireActivity().getColor(R.color.white));
             tvMessage.setText("Yeayy!! congrats, you got 100 points. Keep driving carefully :)");
             tvMessage.setTextColor(getActivity().getColor(R.color.navy));
             btnConfirm.setText("Back");
@@ -54,6 +54,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_confirm) {
+            DetectService.sp.stop(DetectService.streamId);
             dismiss();
         }
     }

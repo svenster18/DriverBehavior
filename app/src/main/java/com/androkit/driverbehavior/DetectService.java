@@ -13,11 +13,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.RingtoneManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -57,6 +59,11 @@ public class DetectService extends Service implements SensorEventListener {
     final MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
 
     private final DetectBinder binder = new DetectBinder();
+
+    public static SoundPool sp;
+    public static int streamId;
+    private int soundId = 0;
+    private boolean spLoaded = false;
 
     public DetectService() {
     }
@@ -109,6 +116,23 @@ public class DetectService extends Service implements SensorEventListener {
         int NOTIFICATION_ID = 1;
         startForeground(NOTIFICATION_ID, notification);
         Log.d(TAG, "Service dijalankan...");
+
+        sp = new SoundPool.Builder()
+                .setMaxStreams(10)
+                .build();
+
+        sp.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int i, int status) {
+                if (status == 0) {
+                    spLoaded = true;
+                } else {
+                    Toast.makeText(DetectService.this, "Load failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        soundId = sp.load(this, R.raw.warning, 1);
 
         return START_STICKY;
     }
@@ -265,6 +289,9 @@ public class DetectService extends Service implements SensorEventListener {
         Calendar calendar = Calendar.getInstance();
         if (alarmManager != null) {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), null);
+            if (spLoaded) {
+                streamId = sp.play(soundId, 1f, 1f, 0, 1, 1f);
+            }
         }
         showAlarmNotification(context);
     }
@@ -282,6 +309,7 @@ public class DetectService extends Service implements SensorEventListener {
 
         NotificationManager notificationManagerCompat = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
