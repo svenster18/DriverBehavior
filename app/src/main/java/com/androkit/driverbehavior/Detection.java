@@ -18,7 +18,7 @@ public class Detection {
         this.sleepy = sleepy;
         this.suddenBraking = suddenBraking;
         this.suddenAcceleration = suddenAcceleration;
-        if(zigZag == 0 && sleepy == 0  && suddenBraking == 0 && suddenAcceleration == 0) {
+        if(zigZag < 7 && sleepy < 7  && suddenBraking < 7 && suddenAcceleration < 7) {
             normal = true;
         }
     }
