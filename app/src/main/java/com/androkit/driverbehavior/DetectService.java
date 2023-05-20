@@ -26,6 +26,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.androkit.driverbehavior.ml.AbnormalDriving;
 import com.androkit.driverbehavior.ml.Mobil2AbnormalDriving;
 import com.androkit.driverbehavior.ml.MobilAbnormalDriving;
+import com.androkit.driverbehavior.ml.MobilproAbnormalDriving;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
@@ -167,7 +168,7 @@ public class DetectService extends Service implements SensorEventListener {
 
             try {
 
-                MobilAbnormalDriving model = MobilAbnormalDriving.newInstance(this);
+                MobilproAbnormalDriving model = MobilproAbnormalDriving.newInstance(this);
 
                 // Creates inputs for reference.
                 TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 10}, DataType.FLOAT32);
@@ -175,7 +176,7 @@ public class DetectService extends Service implements SensorEventListener {
                 inputFeature0.loadArray(toFloatArray(data));
 
                 // Runs model inference and gets result.
-                MobilAbnormalDriving.Outputs outputs = model.process(inputFeature0);
+                MobilproAbnormalDriving.Outputs outputs = model.process(inputFeature0);
                 TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
                 float[] floatOutputs = outputFeature0.getFloatArray();
                 float max = Float.MIN_VALUE;
