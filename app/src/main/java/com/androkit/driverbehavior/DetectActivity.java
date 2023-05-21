@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,7 +17,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.datastore.preferences.core.Preferences;
+import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
+import androidx.datastore.rxjava3.RxDataStore;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.Observer;
 
 import com.google.firebase.database.DatabaseReference;
@@ -29,9 +34,11 @@ import java.util.Calendar;
 public class DetectActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_NOTIF = "extra_notif";
-    public static final String EXTRA_ID = "extra_id";
+    public static final String EXTRA_USER_ID = "extra_user_id";
+    public static final String EXTRA_STREAM_ID = "extra_stream_id";
     public static final int NOTIF = 1;
     public static final int STOP = 2;
+    private static final String STATE_RESULT = "state_result";
 
     private boolean notif;
 
@@ -50,6 +57,8 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     ArrayList<Float> gx = new ArrayList<>();
     ArrayList<Float> gy = new ArrayList<>();
     ArrayList<Float> gz = new ArrayList<>();
+
+    UserPreferences pref;
 
     private ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -78,6 +87,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             boundStatus = false;
         }
     };
+    public static int streamId;
 
     private void getValueFromService() {
         final Observer<Integer> zigzagObserver = zigzag -> {
@@ -120,7 +130,13 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
                     Manifest.permission.POST_NOTIFICATIONS);
         }
 
-        id = getIntent().getStringExtra(EXTRA_ID);
+        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(getApplication(), "preferences").build();
+        pref = UserPreferences.getInstance(dataStore);
+
+        id = getIntent().getStringExtra(EXTRA_USER_ID);
+        streamId = getIntent().getIntExtra(EXTRA_STREAM_ID, 0);
+        if (id != null)
+            pref.saveUserId(id);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("car").child("detection").child(id);
@@ -187,7 +203,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         }
         else if (view.getId() == R.id.btn_my_points) {
             Intent intent = new Intent(DetectActivity.this, PointActivity.class);
-            intent.putExtra(EXTRA_ID, id);
+            intent.putExtra(EXTRA_USER_ID, id);
             startActivity(intent);
         }
     }

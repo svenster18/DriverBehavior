@@ -1,6 +1,7 @@
 package com.androkit.driverbehavior;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +10,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.datastore.preferences.core.Preferences;
+import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
+import androidx.datastore.rxjava3.RxDataStore;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveDataReactiveStreams;
 
 public class DialogFragment extends androidx.fragment.app.DialogFragment implements View.OnClickListener {
 
     public static String EXTRA_FROM = "extra_from";
     private int from;
+    private UserPreferences pref;
 
     public int getFrom() {
         return from;
@@ -38,6 +44,9 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
         TextView tvMessage = view.findViewById(R.id.tv_dialog_message);
         Button btnConfirm = view.findViewById(R.id.btn_confirm);
 
+        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(requireActivity().getApplication(), "preferences").build();
+        pref = UserPreferences.getInstance(dataStore);
+
         if (getFrom() == DetectActivity.STOP) {
             tvTitle.setText("Reward");
             tvTitle.setTextColor(getActivity().getColor(R.color.white));
@@ -60,6 +69,12 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_confirm) {
+            if (DetectService.streamId != 0)
+                DetectService.sp.stop(DetectService.streamId);
+            else {
+                DetectService.sp.stop(DetectActivity.streamId);
+            }
+
             dismiss();
         }
     }

@@ -17,11 +17,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class PointActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -38,7 +35,7 @@ public class PointActivity extends AppCompatActivity implements View.OnClickList
         RecyclerView rvPoints = findViewById(R.id.rv_points);
         Button btnBack = findViewById(R.id.btn_back);
 
-        String id = getIntent().getStringExtra(DetectActivity.EXTRA_ID);
+        String id = getIntent().getStringExtra(DetectActivity.EXTRA_USER_ID);
 
         db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("car").child("detection").child(id);

@@ -13,15 +13,23 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.RingtoneManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+import androidx.datastore.preferences.core.Preferences;
+import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
+import androidx.datastore.rxjava3.RxDataStore;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.androkit.driverbehavior.ml.AbnormalDriving;
 import com.androkit.driverbehavior.ml.Mobil2AbnormalDriving;
@@ -65,6 +73,17 @@ public class DetectService extends Service implements SensorEventListener {
     MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
 
     private DetectBinder binder = new DetectBinder();
+
+    public static SoundPool sp;
+    public static int streamId = 0;
+    private int soundId = 0;
+    private boolean spLoaded = false;
+
+    UserPreferences pref;
+    private LiveData<String> userIdLiveData;
+    private LiveData<Integer> streamIdLiveData;
+    private Observer<String> userIdObserver;
+    private Observer<Integer> streamIdObserver;
 
     public DetectService() {
     }
@@ -115,6 +134,26 @@ public class DetectService extends Service implements SensorEventListener {
         startForeground(NOTIFICATION_ID, notification);
         Log.d(TAG, "Service dijalankan...");
 
+        sp = new SoundPool.Builder()
+                .setMaxStreams(10)
+                .build();
+
+        sp.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int i, int status) {
+                if (status == 0) {
+                    spLoaded = true;
+                } else {
+                    Toast.makeText(DetectService.this, "Load failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        soundId = sp.load(this, R.raw.car_warning, 1);
+
+        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(getApplication(), "preferences").build();
+        pref = UserPreferences.getInstance(dataStore);
+
         return START_STICKY;
     }
 
@@ -125,6 +164,8 @@ public class DetectService extends Service implements SensorEventListener {
         braking = 0;
         acceleration = 0;
         sensorManager.unregisterListener(this);
+        userIdLiveData.removeObserver(userIdObserver);
+        streamIdLiveData.removeObserver(streamIdObserver);
         Log.d(TAG, "onDestroy: Service dihentikan");
         super.onDestroy();
     }
@@ -270,6 +311,10 @@ public class DetectService extends Service implements SensorEventListener {
         Calendar calendar = Calendar.getInstance();
         if (alarmManager != null) {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), null);
+            if (spLoaded) {
+                streamId = sp.play(soundId, 1f, 1f, 0, -1, 1f);
+                pref.saveStreamId(streamId);
+            }
         }
         showAlarmNotification(context, title, message, notifId);
     }
@@ -279,6 +324,27 @@ public class DetectService extends Service implements SensorEventListener {
         String CHANNEL_NAME = "AlarmManager channel";
 
         Intent intent = new Intent(DetectService.this, DetectActivity.class);
+        userIdLiveData = LiveDataReactiveStreams.fromPublisher(pref.getUserId());
+        userIdObserver = new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                intent.putExtra(DetectActivity.EXTRA_USER_ID, s);
+                Log.d(TAG, "User ID " + s);
+            }
+        };
+        userIdLiveData.observeForever(userIdObserver);
+
+        streamIdLiveData = LiveDataReactiveStreams.fromPublisher(pref.getStreamId());
+
+        streamIdObserver = new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                intent.putExtra(DetectActivity.EXTRA_STREAM_ID, integer);
+                Log.d(TAG, "Stream ID " + integer.toString());
+            }
+        };
+        streamIdLiveData.observeForever(streamIdObserver);
+
         intent.putExtra(DetectActivity.EXTRA_NOTIF, true);
         intent.setAction("Open Dialog");
         PendingIntent pendingIntent;

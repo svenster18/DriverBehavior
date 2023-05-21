@@ -69,7 +69,7 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
                     });
 
             Intent intent = new Intent(DataActivity.this, DetectActivity.class);
-            intent.putExtra(DetectActivity.EXTRA_ID, id);
+            intent.putExtra(DetectActivity.EXTRA_USER_ID, id);
             startActivity(intent);
             finish();
         }
