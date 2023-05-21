@@ -132,7 +132,7 @@ public class DetectService extends Service implements SensorEventListener {
             }
         });
 
-        soundId = sp.load(this, R.raw.warning, 1);
+        soundId = sp.load(this, R.raw.bike_warning, 1);
 
         return START_STICKY;
     }
@@ -290,7 +290,7 @@ public class DetectService extends Service implements SensorEventListener {
         if (alarmManager != null) {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), null);
             if (spLoaded) {
-                streamId = sp.play(soundId, 1f, 1f, 0, 1, 1f);
+                streamId = sp.play(soundId, 1f, 1f, 0, -1, 1f);
             }
         }
         showAlarmNotification(context);
