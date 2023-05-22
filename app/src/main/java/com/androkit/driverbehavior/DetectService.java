@@ -26,14 +26,8 @@ import androidx.core.content.ContextCompat;
 import androidx.datastore.preferences.core.Preferences;
 import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
 import androidx.datastore.rxjava3.RxDataStore;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
-import com.androkit.driverbehavior.ml.AbnormalDriving;
-import com.androkit.driverbehavior.ml.Mobil2AbnormalDriving;
-import com.androkit.driverbehavior.ml.MobilAbnormalDriving;
 import com.androkit.driverbehavior.ml.MobilproAbnormalDriving;
 
 import org.tensorflow.lite.DataType;
@@ -47,9 +41,11 @@ import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
     private static final int TIME_STAMP = 10;
-    private final int NOTIFICATION_ID = 1;
-    private final String CHANNEL_ID = "channel_01";
-    private final String CHANNEL_NAME = "dicoding channel";
+    private final int SERVICE_NOTIFICATION_ID = 1;
+    private final String SERVICE_CHANNEL_ID = "channel_01";
+    private final String WARNING_CHANNEL_ID = "channel_02";
+    private final String SERVICE_CHANNEL_NAME = "service channel";
+    private final String WARNING_CHANNEL_NAME = "warning channel";
     final String TAG = DetectService.class.getSimpleName();
     private SensorManager sensorManager;
     private Sensor sensorAcc;
@@ -78,33 +74,28 @@ public class DetectService extends Service implements SensorEventListener {
     public static int streamId = 0;
     private int soundId = 0;
     private boolean spLoaded = false;
-
-    UserPreferences pref;
-    private LiveData<String> userIdLiveData;
-    private LiveData<Integer> streamIdLiveData;
-    private Observer<String> userIdObserver;
-    private Observer<Integer> streamIdObserver;
+    public static boolean spPlayed = false;
 
     public DetectService() {
     }
 
     private Notification buildNotification() {
         Intent notificationIntent = new Intent(this, DetectActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         int pendingFlags = PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, pendingFlags);
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Detect Service")
-                .setContentText("Detecting Behavior Service Running")
-                .setAutoCancel(false);
+                .setContentText("Detecting Behavior Service Running");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    CHANNEL_NAME,
+            NotificationChannel channel = new NotificationChannel(SERVICE_CHANNEL_ID,
+                    SERVICE_CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription(CHANNEL_NAME);
-            notificationBuilder.setChannelId(CHANNEL_ID);
+            channel.setDescription(SERVICE_CHANNEL_NAME);
+            notificationBuilder.setChannelId(SERVICE_CHANNEL_ID);
             mNotificationManager.createNotificationChannel(channel);
         }
 
@@ -124,6 +115,7 @@ public class DetectService extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = buildNotification();
+        notification.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -131,7 +123,7 @@ public class DetectService extends Service implements SensorEventListener {
         sensorManager.registerListener(this, sensorAcc, 50000);
         sensorManager.registerListener(this, sensorGyro, 50000);
 
-        startForeground(NOTIFICATION_ID, notification);
+        startForeground(SERVICE_NOTIFICATION_ID, notification);
         Log.d(TAG, "Service dijalankan...");
 
         sp = new SoundPool.Builder()
@@ -151,9 +143,6 @@ public class DetectService extends Service implements SensorEventListener {
 
         soundId = sp.load(this, R.raw.car_warning, 1);
 
-        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(getApplication(), "preferences").build();
-        pref = UserPreferences.getInstance(dataStore);
-
         return START_STICKY;
     }
 
@@ -164,8 +153,6 @@ public class DetectService extends Service implements SensorEventListener {
         braking = 0;
         acceleration = 0;
         sensorManager.unregisterListener(this);
-        userIdLiveData.removeObserver(userIdObserver);
-        streamIdLiveData.removeObserver(streamIdObserver);
         Log.d(TAG, "onDestroy: Service dihentikan");
         super.onDestroy();
     }
@@ -244,7 +231,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 Log.d(TAG, "Zigzag");
                                 zigzag++;
                                 zigzagLiveData.postValue(zigzag);
-                                if (zigzag == 7 ) {
+                                if (zigzag % 7 == 0 && zigzag > 0) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
@@ -253,7 +240,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 Log.d(TAG, "Sleepy");
                                 sleepy++;
                                 sleepyLiveData.postValue(sleepy);
-                                if (sleepy == 7 ) {
+                                if (sleepy % 7 == 0 && sleepy > 0) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
@@ -262,7 +249,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 Log.d(TAG, "Sudden Braking");
                                 braking++;
                                 brakingLiveData.postValue(braking);
-                                if (braking == 7 ) {
+                                if (braking % 7 ==0 && braking > 0) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
                                 break;
@@ -271,7 +258,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 Log.d(TAG, "Sudden Acceleration");
                                 acceleration++;
                                 accelerationLiveData.postValue(acceleration);
-                                if (acceleration == 7 ) {
+                                if (acceleration % 7 == 0 && acceleration > 0) {
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
 
@@ -311,64 +298,41 @@ public class DetectService extends Service implements SensorEventListener {
         Calendar calendar = Calendar.getInstance();
         if (alarmManager != null) {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), null);
-            if (spLoaded) {
+            if (spLoaded && !spPlayed) {
                 streamId = sp.play(soundId, 1f, 1f, 0, -1, 1f);
-                pref.saveStreamId(streamId);
+                spPlayed = true;
+                showAlarmNotification(context, title, message, notifId);
             }
         }
-        showAlarmNotification(context, title, message, notifId);
     }
 
     private void showAlarmNotification(Context context, String title, String message, int notifId) {
-        String CHANNEL_ID = "Channel_1";
-        String CHANNEL_NAME = "AlarmManager channel";
 
         Intent intent = new Intent(DetectService.this, DetectActivity.class);
-        userIdLiveData = LiveDataReactiveStreams.fromPublisher(pref.getUserId());
-        userIdObserver = new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                intent.putExtra(DetectActivity.EXTRA_USER_ID, s);
-                Log.d(TAG, "User ID " + s);
-            }
-        };
-        userIdLiveData.observeForever(userIdObserver);
-
-        streamIdLiveData = LiveDataReactiveStreams.fromPublisher(pref.getStreamId());
-
-        streamIdObserver = new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                intent.putExtra(DetectActivity.EXTRA_STREAM_ID, integer);
-                Log.d(TAG, "Stream ID " + integer.toString());
-            }
-        };
-        streamIdLiveData.observeForever(streamIdObserver);
-
         intent.putExtra(DetectActivity.EXTRA_NOTIF, true);
+
         intent.setAction("Open Dialog");
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent;
 
         pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationManager notificationManagerCompat = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentIntent(pendingIntent).setAutoCancel(true)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, WARNING_CHANNEL_ID)
+                .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setColor(ContextCompat.getColor(context, android.R.color.transparent))
                 .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
-                .setSound(alarmSound);
+                .setAutoCancel(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    CHANNEL_NAME,
+            NotificationChannel channel = new NotificationChannel(WARNING_CHANNEL_ID,
+                    WARNING_CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_HIGH);
             channel.enableVibration(true);
             channel.setVibrationPattern(new long[]{1000, 1000, 1000, 1000, 1000});
-            channel.setSound(alarmSound, channel.getAudioAttributes());
-            builder.setChannelId(CHANNEL_ID);
+            builder.setChannelId(WARNING_CHANNEL_ID);
             if (notificationManagerCompat != null) {
                 notificationManagerCompat.createNotificationChannel(channel);
             }

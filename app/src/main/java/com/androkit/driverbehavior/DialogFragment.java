@@ -74,6 +74,8 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
             else {
                 DetectService.sp.stop(DetectActivity.streamId);
             }
+            DetectService.spPlayed = false;
+            DetectActivity.isDialogShown = false;
 
             dismiss();
         }
