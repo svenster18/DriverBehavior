@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -66,28 +67,44 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         }
     };
 
+    public static int streamId;
+    public static boolean isDialogShown = false;
+    private boolean started = false;
+
     private void getValueFromService() {
         final Observer<Integer> zigzagObserver = zigzag -> {
             tvZigZag.setText(String.valueOf(zigzag));
-            if (zigzag == 7) showDialogFragment(NOTIF);
+            if (zigzag % 7 == 0 && zigzag > 0 && !isDialogShown) {
+                isDialogShown = true;
+                showDialogFragment(NOTIF);
+            }
         };
         detectService.zigzagLiveData.observe(this, zigzagObserver);
 
         final Observer<Integer> sleepyObserver = sleepy -> {
             tvSleepy.setText(String.valueOf(sleepy));
-            if (sleepy == 7) showDialogFragment(NOTIF);
+            if (sleepy % 7 == 0 && sleepy > 0 && !isDialogShown) {
+                isDialogShown = true;
+                showDialogFragment(NOTIF);
+            }
         };
         detectService.sleepyLiveData.observe(this, sleepyObserver);
 
         final Observer<Integer> brakingObserver = braking -> {
             tvBraking.setText(String.valueOf(braking));
-            if (braking == 7) showDialogFragment(NOTIF);
+            if (braking % 7 == 0 && braking > 0 && !isDialogShown) {
+                isDialogShown = true;
+                showDialogFragment(NOTIF);
+            }
         };
         detectService.brakingLiveData.observe(this, brakingObserver);
 
         final Observer<Integer> accelerationObserver = acceleration -> {
             tvAcceleration.setText(String.valueOf(acceleration));
-            if (acceleration == 7) showDialogFragment(NOTIF);
+            if (acceleration % 7 == 0 && acceleration > 0  && !isDialogShown) {
+                isDialogShown = true;
+                showDialogFragment(NOTIF);
+            }
         };
         detectService.accelerationLiveData.observe(this, accelerationObserver);
     }
@@ -112,9 +129,6 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
 
         FirebaseDatabase db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("bike").child("detection").child(id);
-
-        notif = getIntent().getBooleanExtra(EXTRA_NOTIF, false);
-        if (notif) showDialogFragment(NOTIF);
 
         tvZigZag = findViewById(R.id.tv_zigzag_2);
         tvSleepy = findViewById(R.id.tv_sleepy_2);
@@ -142,8 +156,8 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View view) {
-
         if (view.getId() == R.id.btn_start) {
+            started = true;
             if (Build.VERSION.SDK_INT >= 26) {
                 startForegroundService(foregroundServiceIntent);
             } else {
@@ -152,28 +166,42 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             bindService(foregroundServiceIntent, connection, BIND_AUTO_CREATE);
         }
         else if (view.getId() == R.id.btn_stop) {
-            stopService(foregroundServiceIntent);
-            if (boundStatus) {
-                unbindService(connection);
-                boundStatus = false;
+            if (started) {
+                int zigZag = Integer.parseInt(tvZigZag.getText().toString());
+                int sleepy = Integer.parseInt(tvSleepy.getText().toString());
+                int suddenBraking = Integer.parseInt(tvBraking.getText().toString());
+                int suddenAcceleration = Integer.parseInt(tvAcceleration.getText().toString());
+                Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
+                String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss").format(Calendar.getInstance().getTime());
+                detectionRef.child(timeStamp).setValue(detection);
+                stopService(foregroundServiceIntent);
+                if (!notif && (zigZag < 7 && sleepy < 7 && suddenBraking < 7 && suddenAcceleration < 7))
+                    showDialogFragment(STOP);
+                else {
+                    showDialogFragment(NOTIF);
+                }
+                if (boundStatus) {
+                    unbindService(connection);
+                    boundStatus = false;
+                }
             }
-            int zigZag = Integer.parseInt(tvZigZag.getText().toString());
-            int sleepy = Integer.parseInt(tvSleepy.getText().toString());
-            int suddenBraking = Integer.parseInt(tvBraking.getText().toString());
-            int suddenAcceleration = Integer.parseInt(tvAcceleration.getText().toString());
-            Detection detection = new Detection(zigZag, sleepy, suddenBraking, suddenAcceleration);
-            String timeStamp = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss", Locale.US).format(Calendar.getInstance().getTime());
-            detectionRef.child(timeStamp).setValue(detection);
-            if (!notif && zigZag < 7 && sleepy < 7 && suddenBraking < 7  && suddenAcceleration < 7)
-                showDialogFragment(STOP);
-            else
-                showDialogFragment(NOTIF);
+            started = false;
         }
         else if (view.getId() == R.id.btn_my_points) {
             Intent intent = new Intent(DetectActivity.this, PointActivity.class);
             intent.putExtra(EXTRA_ID, id);
             startActivity(intent);
         }
+    }
+
+    protected void onResume() {
+        super.onResume();
+        Log.d("DetectActivity", "Resume");
+        if (DetectService.spPlayed && !isDialogShown) {
+            isDialogShown = true;
+            showDialogFragment(NOTIF);
+        }
+
     }
 
     @Override
