@@ -41,6 +41,10 @@ import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
     private static final int TIME_STAMP = 10;
+    private static final float ACCEL_MAX = 23.381857f;
+    private static final float ACCEL_MIN = -13.673344f;
+    private static final float GYRO_MAX = 0.894246f;
+    private static final float GYRO_MIN = -0.9062498f;
     private final int SERVICE_NOTIFICATION_ID = 1;
     private final String SERVICE_CHANNEL_ID = "channel_01";
     private final String WARNING_CHANNEL_ID = "channel_02";
@@ -75,6 +79,13 @@ public class DetectService extends Service implements SensorEventListener {
     private int soundId = 0;
     private boolean spLoaded = false;
     public static boolean spPlayed = false;
+
+    float[] normalAx = new float[34];
+    float[] normalAy = new float[34];
+    float[] normalAz = new float[34];
+    float[] normalGx = new float[34];
+    float[] normalGy = new float[34];
+    float[] normalGz = new float[34];
 
     public DetectService() {
     }
@@ -120,8 +131,8 @@ public class DetectService extends Service implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        sensorManager.registerListener(this, sensorAcc, 50000);
-        sensorManager.registerListener(this, sensorGyro, 50000);
+        sensorManager.registerListener(this, sensorAcc, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, sensorGyro, SensorManager.SENSOR_DELAY_NORMAL);
 
         startForeground(SERVICE_NOTIFICATION_ID, notification);
         Log.d(TAG, "Service dijalankan...");
@@ -180,17 +191,34 @@ public class DetectService extends Service implements SensorEventListener {
     }
 
     private void predict() {
-        List<Float> data = new ArrayList<>();
         if( ax.size() >= TIME_STAMP && ay.size() >= TIME_STAMP && az.size() >= TIME_STAMP
                 && gx.size() >= TIME_STAMP && gy.size() >= TIME_STAMP && gz.size() >= TIME_STAMP)
         {
-            data.addAll(ax.subList(0, TIME_STAMP));
-            data.addAll(ay.subList(0, TIME_STAMP));
-            data.addAll(az.subList(0, TIME_STAMP));
-
-            data.addAll(gx.subList(0, TIME_STAMP));
-            data.addAll(gy.subList(0, TIME_STAMP));
-            data.addAll(gz.subList(0, TIME_STAMP));
+            normalAx = normalizazionss(toFloatArray(ax), ACCEL_MIN, ACCEL_MAX);
+            normalAy = normalizazionss(toFloatArray(ay), ACCEL_MIN, ACCEL_MAX);
+            normalAz = normalizazionss(toFloatArray(az), ACCEL_MIN, ACCEL_MAX);
+            normalGx = normalizazionss(toFloatArray(gx), GYRO_MIN, GYRO_MAX);
+            normalGy = normalizazionss(toFloatArray(gy), GYRO_MIN, GYRO_MAX);
+            normalGz = normalizazionss(toFloatArray(gz), GYRO_MIN, GYRO_MAX);
+            ArrayList<Float> data = new ArrayList<>();
+            for (float nAx : normalAx) {
+                data.add(nAx);
+            }
+            for (float nAy : normalAy) {
+                data.add(nAy);
+            }
+            for (float nAz : normalAz) {
+                data.add(nAz);
+            }
+            for (float nGx : normalGx) {
+                data.add(nGx);
+            }
+            for (float nGy : normalGy) {
+                data.add(nGy);
+            }
+            for (float nGz : normalGz) {
+                data.add(nGz);
+            }
 
             Log.d(TAG, "predictActivities: Data in List ArrayList"+ data);
 
@@ -202,6 +230,14 @@ public class DetectService extends Service implements SensorEventListener {
                 TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 10}, DataType.FLOAT32);
                 Log.d("shape", inputFeature0.getBuffer().toString());
                 inputFeature0.loadArray(toFloatArray(data));
+
+                ax.clear();
+                ay.clear();
+                az.clear();
+                gx.clear();
+                gy.clear();
+                gz.clear();
+                data.clear();
 
                 // Runs model inference and gets result.
                 MobilproAbnormalDriving.Outputs outputs = model.process(inputFeature0);
@@ -282,6 +318,23 @@ public class DetectService extends Service implements SensorEventListener {
                 // TODO Handle the exception
             }
         }
+    }
+
+    public float[] normalizazionss(float[] input_array, float arrayMin, float arrayMax){
+
+        float maxValue = 1.0f;
+        float minValue = 0f;
+
+        // Create an output array of the same size as the input array
+        float[] outputArray = new float[input_array.length];
+
+        // Normalize each element of the input array and store it in the output array
+        for (int i = 0; i < input_array.length; i++) {
+            outputArray[i] = ((input_array[i] - arrayMin) / (arrayMax - arrayMin)) * (maxValue - minValue) + minValue;
+        }
+
+        return outputArray;
+
     }
 
     private float[] toFloatArray(List<Float> data){
