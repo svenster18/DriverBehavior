@@ -12,9 +12,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.RingtoneManager;
 import android.media.SoundPool;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -27,7 +25,6 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.androkit.driverbehavior.ml.AbnormalDriving;
 
-import org.checkerframework.checker.units.qual.A;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
@@ -38,7 +35,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
-    private static final int TIME_STAMP = 34;
+    private static final int SENSOR_TIME_STAMP = 34;
     private static final float ACCEL_MAX = 23.381857f;
     private static final float ACCEL_MIN = -13.673344f;
     private static final float GYRO_MAX = 0.894246f;
@@ -50,28 +47,30 @@ public class DetectService extends Service implements SensorEventListener {
     private final String WARNING_CHANNEL_NAME = "warning channel";
     final String TAG = DetectService.class.getSimpleName();
     private SensorManager sensorManager;
+    private Sensor sensorAcc;
+    private Sensor sensorGyro;
 
-    final ArrayList<Float> ax = new ArrayList<>();
-    final ArrayList<Float> ay = new ArrayList<>();
-    final ArrayList<Float> az = new ArrayList<>();
-    final ArrayList<Float> gx = new ArrayList<>();
-    final ArrayList<Float> gy = new ArrayList<>();
-    final ArrayList<Float> gz = new ArrayList<>();
+    private ArrayList<Float> ax = new ArrayList<>();
+    private ArrayList<Float> ay = new ArrayList<>();
+    private ArrayList<Float> az = new ArrayList<>();
+    private ArrayList<Float> gx = new ArrayList<>();
+    private ArrayList<Float> gy = new ArrayList<>();
+    private ArrayList<Float> gz = new ArrayList<>();
 
     private int zigzag = 0;
     private int sleepy = 0;
     private int braking = 0;
     private int acceleration = 0;
 
-    final MutableLiveData<Integer> zigzagLiveData = new MutableLiveData<>();
-    final MutableLiveData<Integer> sleepyLiveData = new MutableLiveData<>();
-    final MutableLiveData<Integer> brakingLiveData = new MutableLiveData<>();
-    final MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
+    MutableLiveData<Integer> zigzagLiveData = new MutableLiveData<>();
+    MutableLiveData<Integer> sleepyLiveData = new MutableLiveData<>();
+    MutableLiveData<Integer> brakingLiveData = new MutableLiveData<>();
+    MutableLiveData<Integer> accelerationLiveData = new MutableLiveData<>();
 
-    private final DetectBinder binder = new DetectBinder();
+    private DetectBinder binder = new DetectBinder();
 
     public static SoundPool sp;
-    public static int streamId;
+    public static int streamId = 0;
     private int soundId = 0;
     private boolean spLoaded = false;
     public static boolean spPlayed = false;
@@ -83,10 +82,8 @@ public class DetectService extends Service implements SensorEventListener {
     float[] normalGy = new float[34];
     float[] normalGz = new float[34];
 
-    float[] accelvalue = new float[3];
-    float[] gyrovalue = new float[3];
-    private float[] senAccel;
-    private float[] senGyro;
+    int accel = 0;
+    int gyro = 0;
 
     public DetectService() {
     }
@@ -101,8 +98,7 @@ public class DetectService extends Service implements SensorEventListener {
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Detect Service")
-                .setContentText("Detecting Behavior Service Running")
-                .setAutoCancel(false);
+                .setContentText("Detecting Behavior Service Running");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(SERVICE_CHANNEL_ID,
                     SERVICE_CHANNEL_NAME,
@@ -128,10 +124,11 @@ public class DetectService extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Notification notification = buildNotification();
+        notification.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        Sensor sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        Sensor sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorAcc = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         sensorManager.registerListener(this, sensorAcc, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, sensorGyro, SensorManager.SENSOR_DELAY_NORMAL);
 
@@ -173,25 +170,31 @@ public class DetectService extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent sensorEvent) {
         Sensor sensorType = sensorEvent.sensor;
 
-        if (sensorType.getType() == Sensor.TYPE_ACCELEROMETER) {
-            // adding the accelerometer values inside the list
-            ax.add(sensorEvent.values[0]);
-            ay.add(sensorEvent.values[1]);
-            az.add(sensorEvent.values[2]);
-
-        } else if (sensorType.getType() == Sensor.TYPE_GYROSCOPE) {
-            // adding the gyroscope values inside the list
-            gx.add(sensorEvent.values[0]);
-            gy.add(sensorEvent.values[1]);
-            gz.add(sensorEvent.values[2]);
+        if(sensorType.getType()==Sensor.TYPE_ACCELEROMETER) {
+            if (accel < 34) {
+                // adding the accelerometer values inside the list
+                ax.add(sensorEvent.values[0]);
+                ay.add(sensorEvent.values[1]);
+                az.add(sensorEvent.values[2]);
+                accel++;
+            }
+        }else if(sensorType.getType()==Sensor.TYPE_GYROSCOPE){
+            if (gyro < 34) {
+                // adding the gyroscope values inside the list
+                gx.add(sensorEvent.values[0]);
+                gy.add(sensorEvent.values[1]);
+                gz.add(sensorEvent.values[2]);
+                gyro++;
+            }
         }
 
         predict();
     }
 
     private void predict() {
-        if (ax.size() >= TIME_STAMP && ay.size() >= TIME_STAMP && az.size() >= TIME_STAMP
-                && gx.size() >= TIME_STAMP && gy.size() >= TIME_STAMP && gz.size() >= TIME_STAMP) {
+        if( ax.size() == 34 && ay.size() == 34 && az.size() == 34
+                && gx.size() == 34 && gy.size() == 34 && gz.size() == 34)
+        {
             normalAx = normalizazionss(toFloatArray(ax), ACCEL_MIN, ACCEL_MAX);
             normalAy = normalizazionss(toFloatArray(ay), ACCEL_MIN, ACCEL_MAX);
             normalAz = normalizazionss(toFloatArray(az), ACCEL_MIN, ACCEL_MAX);
@@ -218,23 +221,16 @@ public class DetectService extends Service implements SensorEventListener {
                 data.add(nGz);
             }
 
-//            for (int i = 0; i < TIME_STAMP; i++) {
-//                data.add(normalAx[i]);
-//                data.add(normalAy[i]);
-//                data.add(normalAz[i]);
-//                data.add(normalGx[i]);
-//                data.add(normalGy[i]);
-//                data.add(normalGz[i]);
-//            }
-
-            Log.d(TAG, "predictActivities: Data in List ArrayList" + data);
-            Log.d(TAG, "predictActivities: Data size : " + ax.size());
+            Log.d(TAG, "predictActivities: Data in List ArrayList"+ data);
+            Log.d(TAG, "predictActivities: ax size: "+ ax.size());
+            Log.d(TAG, "predictActivities: gx size: "+ gx.size());
 
             try {
+
                 AbnormalDriving model = AbnormalDriving.newInstance(this);
 
                 // Creates inputs for reference.
-                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, TIME_STAMP}, DataType.FLOAT32);
+                TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 6, 34}, DataType.FLOAT32);
                 Log.d("shape", inputFeature0.getBuffer().toString());
                 inputFeature0.loadArray(toFloatArray(data));
 
@@ -259,71 +255,71 @@ public class DetectService extends Service implements SensorEventListener {
                     }
                 }
                 for (int i = 0; i < floatOutputs.length; i++) {
-                    if (floatOutputs[i] == max) {
+                    if(floatOutputs[i] == max) {
                         maxIndex = i;
                         sameValue++;
                     }
                 }
-                if (sameValue == 1) {
-                    switch (maxIndex) {
-                        case 0: {
-                            Log.d(TAG, "Normal");
-                            break;
-                        }
-                        case 1: {
-                            Log.d(TAG, "Zigzag");
-                            zigzag++;
-                            zigzagLiveData.postValue(zigzag);
-                            if (zigzag % 7 == 0 && zigzag > 0) {
-                                setAlarm(this);
+                    if (sameValue == 1) {
+                        switch (maxIndex) {
+                            case 0 : {
+                                Log.d(TAG, "Normal");
+                                break;
                             }
-                            break;
-                        }
-                        case 2: {
-                            Log.d(TAG, "Sleepy");
-                            sleepy++;
-                            sleepyLiveData.postValue(sleepy);
-                            if (sleepy % 7 == 0 && sleepy > 0) {
-                                setAlarm(this);
+                            case 1 : {
+                                Log.d(TAG, "Zigzag");
+                                zigzag++;
+                                zigzagLiveData.postValue(zigzag);
+                                if (zigzag % 7 == 0 && zigzag > 0) {
+                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                }
+                                break;
                             }
-                            break;
-                        }
-                        case 3: {
-                            Log.d(TAG, "Sudden Braking");
-                            braking++;
-                            brakingLiveData.postValue(braking);
-                            if (braking % 7 ==0 && braking > 0) {
-                                setAlarm(this);
+                            case 2 : {
+                                Log.d(TAG, "Sleepy");
+                                sleepy++;
+                                sleepyLiveData.postValue(sleepy);
+                                if (sleepy % 7 == 0 && sleepy > 0) {
+                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                }
+                                break;
                             }
-                            break;
-                        }
-                        case 4: {
-                            Log.d(TAG, "Sudden Acceleration");
-                            acceleration++;
-                            accelerationLiveData.postValue(acceleration);
-                            if (acceleration % 7 == 0 && acceleration > 0) {
-                                setAlarm(this);
+                            case 3 : {
+                                Log.d(TAG, "Sudden Braking");
+                                braking++;
+                                brakingLiveData.postValue(braking);
+                                if (braking % 7 ==0 && braking > 0) {
+                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                }
+                                break;
                             }
+                            case 4 : {
+                                Log.d(TAG, "Sudden Acceleration");
+                                acceleration++;
+                                accelerationLiveData.postValue(acceleration);
+                                if (acceleration % 7 == 0 && acceleration > 0) {
+                                    setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
+                                }
 
-                            break;
+                                break;
+                            }
                         }
                     }
-                } else {
-                    Log.d(TAG, "Normal");
-                }
+                    else {
+                        Log.d(TAG, "Normal");
+                    }
+//                }
                 Log.d(TAG, "predictActivities: output array: " + Arrays.toString(outputFeature0.getFloatArray()));
 
                 // Releases model resources if no longer used.
                 model.close();
 
                 //clear the list for the next prediction
-                ax.clear();
-                ay.clear();
-                az.clear();
-                gx.clear();
-                gy.clear();
-                gz.clear();
-                data.clear();
+                ax.clear(); ay.clear(); az.clear();
+                gx.clear(); gy.clear(); gz.clear();data.clear();
+
+                accel = 0;
+                gyro = 0;
             } catch (IOException e) {
                 // TODO Handle the exception
             }
@@ -347,16 +343,16 @@ public class DetectService extends Service implements SensorEventListener {
 
     }
 
-    private float[] toFloatArray(List<Float> data) {
+    private float[] toFloatArray(List<Float> data){
         int i = 0;
         float[] array = new float[data.size()];
-        for (Float f : data) {
-            array[i++] = (f != null ? f : Float.NaN);
+        for (Float f: data){
+            array[i++] = (f !=null ? f: Float.NaN);
         }
         return array;
     }
 
-    private void setAlarm(Context context) {
+    private void setAlarm(Context context, String title, String message, int notifId) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Calendar calendar = Calendar.getInstance();
         if (alarmManager != null) {
@@ -364,14 +360,16 @@ public class DetectService extends Service implements SensorEventListener {
             if (spLoaded && !spPlayed) {
                 streamId = sp.play(soundId, 1f, 1f, 0, -1, 1f);
                 spPlayed = true;
-                showAlarmNotification(context);
+                showAlarmNotification(context, title, message, notifId);
             }
         }
     }
 
-    private void showAlarmNotification(Context context) {
+    private void showAlarmNotification(Context context, String title, String message, int notifId) {
+
         Intent intent = new Intent(DetectService.this, DetectActivity.class);
         intent.putExtra(DetectActivity.EXTRA_NOTIF, true);
+
         intent.setAction("Open Dialog");
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent;
@@ -379,12 +377,11 @@ public class DetectService extends Service implements SensorEventListener {
         pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationManager notificationManagerCompat = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, WARNING_CHANNEL_ID)
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Warning")
-                .setContentText("You have been driving outside normal limits")
+                .setContentTitle(title)
+                .setContentText(message)
                 .setColor(ContextCompat.getColor(context, android.R.color.transparent))
                 .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
                 .setAutoCancel(true);
@@ -401,7 +398,7 @@ public class DetectService extends Service implements SensorEventListener {
         }
         Notification notification = builder.build();
         if (notificationManagerCompat != null) {
-            notificationManagerCompat.notify(100, notification);
+            notificationManagerCompat.notify(notifId, notification);
             Log.d(TAG, "Alarm started");
         }
     }
@@ -412,6 +409,6 @@ public class DetectService extends Service implements SensorEventListener {
     }
 
     public class DetectBinder extends Binder {
-        final DetectService getService = DetectService.this;
+        DetectService getService = DetectService.this;
     }
 }
