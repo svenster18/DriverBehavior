@@ -23,9 +23,6 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
-import androidx.datastore.rxjava3.RxDataStore;
 import androidx.lifecycle.MutableLiveData;
 
 import com.androkit.driverbehavior.ml.MobilproAbnormalDriving;
