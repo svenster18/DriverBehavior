@@ -77,12 +77,12 @@ public class DetectService extends Service implements SensorEventListener {
     private boolean spLoaded = false;
     public static boolean spPlayed = false;
 
-    float[] normalAx = new float[34];
-    float[] normalAy = new float[34];
-    float[] normalAz = new float[34];
-    float[] normalGx = new float[34];
-    float[] normalGy = new float[34];
-    float[] normalGz = new float[34];
+    float[] normalAx = new float[10];
+    float[] normalAy = new float[10];
+    float[] normalAz = new float[10];
+    float[] normalGx = new float[10];
+    float[] normalGy = new float[10];
+    float[] normalGz = new float[10];
 
     int accel = 0;
     int gyro = 0;
@@ -173,7 +173,7 @@ public class DetectService extends Service implements SensorEventListener {
         Sensor sensorType = sensorEvent.sensor;
 
         if(sensorType.getType()==Sensor.TYPE_ACCELEROMETER) {
-            if (accel < 34) {
+            if (accel < 10) {
                 // adding the accelerometer values inside the list
                 ax.add(sensorEvent.values[0]);
                 ay.add(sensorEvent.values[1]);
@@ -184,7 +184,7 @@ public class DetectService extends Service implements SensorEventListener {
 
 
         }else if(sensorType.getType()==Sensor.TYPE_GYROSCOPE){
-            if (gyro < 34) {
+            if (gyro < 10) {
                 // adding the gyroscope values inside the list
                 gx.add(sensorEvent.values[0]);
                 gy.add(sensorEvent.values[1]);
