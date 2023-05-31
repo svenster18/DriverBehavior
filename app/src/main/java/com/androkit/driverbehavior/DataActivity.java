@@ -53,6 +53,7 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
 
             Driver driver = new Driver(name);
             String id = driver.name.toLowerCase().replace(" ", "-");
+            if(id.endsWith("-")) id.replace("-", "");
             driverRef.child(id).setValue(driver)
                     .addOnSuccessListener(unused -> Toast.makeText(getApplication(), "Driver Data saved", Toast.LENGTH_SHORT).show())
                     .addOnFailureListener(e -> Toast.makeText(getApplication(), "Driver Data failed to save", Toast.LENGTH_SHORT).show());

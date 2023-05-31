@@ -298,6 +298,7 @@ public class DetectService extends Service implements SensorEventListener {
                                 acceleration++;
                                 accelerationLiveData.postValue(acceleration);
                                 if (acceleration % 7 == 0 && acceleration > 0) {
+                                    Log.d(TAG, "Acceleration : "+acceleration);
                                     setAlarm(this, "Warning", "You have been driving outside normal limits", 100);
                                 }
 
