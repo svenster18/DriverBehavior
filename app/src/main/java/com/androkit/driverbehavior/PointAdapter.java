@@ -22,7 +22,7 @@ public class PointAdapter extends FirebaseRecyclerAdapter<Detection, PointAdapte
 
     @Override
     protected void onBindViewHolder(@NonNull PointAdapter.PointViewHolder holder, int position, @NonNull Detection model) {
-        if (!model.normal) holder.itemView.setVisibility(View.GONE);
+
     }
 
     @NonNull

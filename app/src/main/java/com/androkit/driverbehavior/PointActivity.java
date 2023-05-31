@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 import java.util.HashMap;
 
@@ -60,8 +61,10 @@ public class PointActivity extends AppCompatActivity implements View.OnClickList
         LinearLayoutManager manager = new LinearLayoutManager(this);
         rvPoints.setLayoutManager(manager);
 
+        Query queryByNormal = detectionRef.orderByChild("normal").equalTo(true);
+
         FirebaseRecyclerOptions<Detection> options = new FirebaseRecyclerOptions.Builder<Detection>()
-                .setQuery(detectionRef, Detection.class)
+                .setQuery(queryByNormal, Detection.class)
                 .build();
         adapter = new PointAdapter(options);
 
