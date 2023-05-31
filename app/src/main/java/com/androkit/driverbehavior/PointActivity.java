@@ -45,10 +45,12 @@ public class PointActivity extends AppCompatActivity implements View.OnClickList
             else {
                 int totalNormal = 0;
                 HashMap<String, HashMap<String, Object>> detections = (HashMap<String, HashMap<String, Object>>) task.getResult().getValue();
-                Log.d("PointActivity", detections.toString());
-                for (HashMap<String, Object> det: detections.values()) {
-                    boolean normal = (boolean) det.get("normal");
-                    if (normal) totalNormal++;
+                if (detections != null) {
+                    Log.d("PointActivity", detections.toString());
+                    for (HashMap<String, Object> det: detections.values()) {
+                        boolean normal = (boolean) det.get("normal");
+                        if (normal) totalNormal++;
+                    }
                 }
                 int totalPoints = 100 * totalNormal;
                 tvPoints.setText(String.valueOf(totalPoints));
