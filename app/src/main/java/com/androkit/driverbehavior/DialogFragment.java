@@ -56,6 +56,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
         if (view.getId() == R.id.btn_confirm) {
             DetectService.sp.stop(DetectService.streamId);
             DetectService.spPlayed = false;
+            DetectActivity.isDialogShown = false;
             dismiss();
         }
     }
