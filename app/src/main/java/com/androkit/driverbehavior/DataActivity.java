@@ -54,6 +54,7 @@ public class DataActivity extends AppCompatActivity implements View.OnClickListe
 
             Driver driver = new Driver(name, phone);
             String id = driver.name.toLowerCase().replace(" ", "-");
+            if(id.endsWith("-")) id = id.replace("-", "");
             driverRef.child(id).setValue(driver)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
