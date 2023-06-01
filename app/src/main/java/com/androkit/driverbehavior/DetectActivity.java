@@ -77,7 +77,6 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             if (zigzag % 7 == 0 && zigzag > 0 && !isDialogShown) {
                 isDialogShown = true;
                 showDialogFragment(NOTIF);
-                isDialogShown = false;
             }
         };
         detectService.zigzagLiveData.observe(this, zigzagObserver);
