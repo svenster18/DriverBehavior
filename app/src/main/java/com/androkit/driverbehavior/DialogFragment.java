@@ -10,11 +10,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
-import androidx.datastore.rxjava3.RxDataStore;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveDataReactiveStreams;
 
 public class DialogFragment extends androidx.fragment.app.DialogFragment implements View.OnClickListener {
 
@@ -43,9 +38,6 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
         TextView tvTitle = view.findViewById(R.id.tv_dialog_title);
         TextView tvMessage = view.findViewById(R.id.tv_dialog_message);
         Button btnConfirm = view.findViewById(R.id.btn_confirm);
-
-        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(requireActivity().getApplication(), "preferences").build();
-        pref = UserPreferences.getInstance(dataStore);
 
         if (getFrom() == DetectActivity.STOP) {
             tvTitle.setText("Reward");
