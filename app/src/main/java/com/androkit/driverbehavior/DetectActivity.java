@@ -17,11 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
-import androidx.datastore.rxjava3.RxDataStore;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.LiveDataReactiveStreams;
 import androidx.lifecycle.Observer;
 
 import com.google.firebase.database.DatabaseReference;
@@ -143,9 +139,6 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             requestPermissionLauncher.launch(
                     Manifest.permission.POST_NOTIFICATIONS);
         }
-
-        RxDataStore<Preferences> dataStore = new RxPreferenceDataStoreBuilder(getApplication(), "preferences").build();
-        pref = UserPreferences.getInstance(dataStore);
 
         id = getIntent().getStringExtra(EXTRA_USER_ID);
         streamId = getIntent().getIntExtra(EXTRA_STREAM_ID, 0);
