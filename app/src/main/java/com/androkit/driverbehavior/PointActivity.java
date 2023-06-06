@@ -23,7 +23,6 @@ import java.util.HashMap;
 
 public class PointActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private FirebaseDatabase db;
     DatabaseReference detectionRef;
     private PointAdapter adapter;
 
@@ -36,29 +35,26 @@ public class PointActivity extends AppCompatActivity implements View.OnClickList
         RecyclerView rvPoints = findViewById(R.id.rv_points);
         Button btnBack = findViewById(R.id.btn_back);
 
-        String id = getIntent().getStringExtra(DetectActivity.EXTRA_USER_ID);
+        String id = getIntent().getStringExtra(DetectActivity.EXTRA_ID);
 
-        db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("car").child("detection").child(id);
-        detectionRef.get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (!task.isSuccessful()) {
-                    Log.e("firebase", "Error getting data", task.getException());
-                }
-                else {
-                    int totalNormal = 0;
-                    HashMap<String, HashMap<String, Object>> detections = (HashMap<String, HashMap<String, Object>>) task.getResult().getValue();
-                    if (detections != null) {
-                        Log.d("PointActivity", detections.toString());
-                        for (HashMap<String, Object> det: detections.values()) {
-                            boolean normal = (boolean) det.get("normal");
-                            if (normal) totalNormal++;
-                        }
+        detectionRef.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.e("firebase", "Error getting data", task.getException());
+            }
+            else {
+                int totalNormal = 0;
+                HashMap<String, HashMap<String, Object>> detections = (HashMap<String, HashMap<String, Object>>) task.getResult().getValue();
+                if (detections != null) {
+                    Log.d("PointActivity", detections.toString());
+                    for (HashMap<String, Object> det: detections.values()) {
+                        boolean normal = (boolean) det.get("normal");
+                        if (normal) totalNormal++;
                     }
-                    int totalPoints = 100 * totalNormal;
-                    tvPoints.setText(String.valueOf(totalPoints));
                 }
+                int totalPoints = 100 * totalNormal;
+                tvPoints.setText(String.valueOf(totalPoints));
             }
         });
 

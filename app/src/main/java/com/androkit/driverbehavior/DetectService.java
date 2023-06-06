@@ -37,7 +37,6 @@ import java.util.Calendar;
 import java.util.List;
 
 public class DetectService extends Service implements SensorEventListener {
-    private static final int TIME_STAMP = 10;
     private static final float ACCEL_MAX = 23.381857f;
     private static final float ACCEL_MIN = -13.673344f;
     private static final float GYRO_MAX = 0.894246f;
@@ -52,12 +51,12 @@ public class DetectService extends Service implements SensorEventListener {
     private Sensor sensorAcc;
     private Sensor sensorGyro;
 
-    ArrayList<Float> ax = new ArrayList<>();
-    ArrayList<Float> ay = new ArrayList<>();
-    ArrayList<Float> az = new ArrayList<>();
-    ArrayList<Float> gx = new ArrayList<>();
-    ArrayList<Float> gy = new ArrayList<>();
-    ArrayList<Float> gz = new ArrayList<>();
+    private ArrayList<Float> ax = new ArrayList<>();
+    private ArrayList<Float> ay = new ArrayList<>();
+    private ArrayList<Float> az = new ArrayList<>();
+    private ArrayList<Float> gx = new ArrayList<>();
+    private ArrayList<Float> gy = new ArrayList<>();
+    private ArrayList<Float> gz = new ArrayList<>();
 
     private int zigzag = 0;
     private int sleepy = 0;
@@ -198,8 +197,8 @@ public class DetectService extends Service implements SensorEventListener {
     }
 
     private void predict() {
-        if( ax.size() >= TIME_STAMP && ay.size() >= TIME_STAMP && az.size() >= TIME_STAMP
-                && gx.size() >= TIME_STAMP && gy.size() >= TIME_STAMP && gz.size() >= TIME_STAMP)
+        if( ax.size() >= 10 && ay.size() >= 10 && az.size() >= 10
+                && gx.size() >= 10 && gy.size() >= 10 && gz.size() >= 10)
         {
             normalAx = normalizazionss(toFloatArray(ax), ACCEL_MIN, ACCEL_MAX);
             normalAy = normalizazionss(toFloatArray(ay), ACCEL_MIN, ACCEL_MAX);
@@ -228,6 +227,8 @@ public class DetectService extends Service implements SensorEventListener {
             }
 
             Log.d(TAG, "predictActivities: Data in List ArrayList"+ data);
+            Log.d(TAG, "predictActivities: ax size"+ ax.size());
+            Log.d(TAG, "predictActivities: gx size"+ gx.size());
 
             try {
 

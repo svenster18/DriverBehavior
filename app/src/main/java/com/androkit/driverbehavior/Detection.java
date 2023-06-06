@@ -4,10 +4,10 @@ import com.google.firebase.database.IgnoreExtraProperties;
 
 @IgnoreExtraProperties
 public class Detection {
-    public int zigZag;
-    public int sleepy;
-    public int suddenBraking;
-    public int suddenAcceleration;
+    public int zigZag = 0;
+    public int sleepy = 0;
+    public int suddenBraking = 0;
+    public int suddenAcceleration = 0;
     public boolean normal = false;
 
     public Detection() {

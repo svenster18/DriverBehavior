@@ -24,17 +24,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 public class DetectActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_NOTIF = "extra_notif";
-    public static final String EXTRA_USER_ID = "extra_user_id";
-    public static final String EXTRA_STREAM_ID = "extra_stream_id";
+    public static final String EXTRA_ID = "extra_user_id";
     public static final int NOTIF = 1;
     public static final int STOP = 2;
-    private static final String STATE_RESULT = "state_result";
 
     private boolean notif;
 
@@ -42,28 +39,11 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     private TextView tvSleepy;
     private TextView tvBraking;
     private TextView tvAcceleration;
-
-    private FirebaseDatabase db;
     DatabaseReference detectionRef;
-    String id;
+    String id = "";
 
-    ArrayList<Float> ax = new ArrayList<>();
-    ArrayList<Float> ay = new ArrayList<>();
-    ArrayList<Float> az = new ArrayList<>();
-    ArrayList<Float> gx = new ArrayList<>();
-    ArrayList<Float> gy = new ArrayList<>();
-    ArrayList<Float> gz = new ArrayList<>();
-
-    UserPreferences pref;
-
-    private ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-
-                } else {
-
-                }
-            });
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {});
 
     Intent foregroundServiceIntent;
 
@@ -131,21 +111,19 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_detect);
 
         if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.POST_NOTIFICATIONS) ==
+                this, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED) {
             // You can use the API that requires the permission.
-        }
-        else {
-            requestPermissionLauncher.launch(
-                    Manifest.permission.POST_NOTIFICATIONS);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(
+                        Manifest.permission.POST_NOTIFICATIONS);
+            }
         }
 
-        id = getIntent().getStringExtra(EXTRA_USER_ID);
-        streamId = getIntent().getIntExtra(EXTRA_STREAM_ID, 0);
-        if (id != null)
-            pref.saveUserId(id);
+        if (getIntent().getStringExtra(EXTRA_ID) != null)
+            id = getIntent().getStringExtra(EXTRA_ID);
 
-        db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
+        FirebaseDatabase db = FirebaseDatabase.getInstance("https://driver-behavior-5f3db-default-rtdb.asia-southeast1.firebasedatabase.app");
         detectionRef = db.getReference().child("car").child("detection").child(id);
 
         tvZigZag = findViewById(R.id.tv_zigzag_2);
@@ -220,7 +198,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
         }
         else if (view.getId() == R.id.btn_my_points) {
             Intent intent = new Intent(DetectActivity.this, PointActivity.class);
-            intent.putExtra(EXTRA_USER_ID, id);
+            intent.putExtra(EXTRA_ID, id);
             startActivity(intent);
         }
     }

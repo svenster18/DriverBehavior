@@ -32,11 +32,6 @@ public class PointAdapter extends FirebaseRecyclerAdapter<Detection, PointAdapte
         return new PointViewHolder(view);
     }
 
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
-    }
-
     public class PointViewHolder extends RecyclerView.ViewHolder {
 
         public PointViewHolder(View view) {

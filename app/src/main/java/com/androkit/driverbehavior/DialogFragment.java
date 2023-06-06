@@ -12,10 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class DialogFragment extends androidx.fragment.app.DialogFragment implements View.OnClickListener {
-
-    public static String EXTRA_FROM = "extra_from";
     private int from;
-    private UserPreferences pref;
 
     public int getFrom() {
         return from;
@@ -48,12 +45,6 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
             btnConfirm.getBackground().setTint(requireActivity().getColor(R.color.gray));
             btnConfirm.setTextColor(requireActivity().getColor(R.color.white));
         }
-        else {
-            tvTitle.setText("Warning!");
-            tvTitle.setTextColor(requireActivity().getColor(R.color.red));
-            tvMessage.setText("You have been driving outside normal limits");
-            tvMessage.setTextColor(getActivity().getColor(R.color.white));
-        }
 
         btnConfirm.setOnClickListener(this);
     }
@@ -61,11 +52,7 @@ public class DialogFragment extends androidx.fragment.app.DialogFragment impleme
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_confirm) {
-            if (DetectService.streamId != 0)
-                DetectService.sp.stop(DetectService.streamId);
-            else {
-                DetectService.sp.stop(DetectActivity.streamId);
-            }
+            DetectService.sp.stop(DetectService.streamId);
             DetectService.spPlayed = false;
             DetectActivity.isDialogShown = false;
 
