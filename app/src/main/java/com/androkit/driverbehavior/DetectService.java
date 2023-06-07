@@ -322,6 +322,7 @@ public class DetectService extends Service implements SensorEventListener {
                 //clear the list for the next prediction
                 ax.clear(); ay.clear(); az.clear();
                 gx.clear(); gy.clear(); gz.clear();data.clear();
+
                 accel = 0;
                 gyro = 0;
             } catch (IOException e) {

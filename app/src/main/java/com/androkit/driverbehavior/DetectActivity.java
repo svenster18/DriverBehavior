@@ -29,7 +29,7 @@ import java.util.Calendar;
 public class DetectActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String EXTRA_NOTIF = "extra_notif";
-    public static final String EXTRA_ID = "extra_user_id";
+    public static final String EXTRA_ID = "extra_id";
     public static final int NOTIF = 1;
     public static final int STOP = 2;
 
@@ -49,7 +49,7 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
 
     private boolean boundStatus = false;
     private DetectService detectService;
-    private ServiceConnection connection = new ServiceConnection() {
+    private final ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             DetectService.DetectBinder detectBinder = (DetectService.DetectBinder) service;
@@ -151,26 +151,15 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("DetectActivity", "Resume");
-        if (DetectService.spPlayed && !isDialogShown) {
-            isDialogShown = true;
-            showDialogFragment(NOTIF);
-        }
-
-    }
-
-    @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btn_start) {
+            started = true;
             if (Build.VERSION.SDK_INT >= 26) {
                 startForegroundService(foregroundServiceIntent);
             } else {
                 startService(foregroundServiceIntent);
             }
             bindService(foregroundServiceIntent, connection, BIND_AUTO_CREATE);
-            started = true;
         }
         else if (view.getId() == R.id.btn_stop) {
             if (started) {
@@ -192,8 +181,8 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
                     boundStatus = false;
                 }
             }
-            
-            
+
+
             started = false;
         }
         else if (view.getId() == R.id.btn_my_points) {
@@ -201,6 +190,17 @@ public class DetectActivity extends AppCompatActivity implements View.OnClickLis
             intent.putExtra(EXTRA_ID, id);
             startActivity(intent);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("DetectActivity", "Resume");
+        if (DetectService.spPlayed && !isDialogShown) {
+            isDialogShown = true;
+            showDialogFragment(NOTIF);
+        }
+
     }
 
     @Override
